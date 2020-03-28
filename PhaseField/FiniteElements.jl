@@ -1,4 +1,6 @@
 using Printf
+include("mesh.jl")
+include("MyMaterialPoint.jl")
 import FeMesh
 import moduleMaterialPoint
 

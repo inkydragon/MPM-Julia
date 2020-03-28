@@ -4,8 +4,10 @@ module FeMesh
 # Vinh Phu Nguyen
 # (nvinhphu@gmail.com)
 using Printf
-import moduleMaterialPoint
 using PyPlot
+include("MyMaterialPoint.jl")
+import moduleMaterialPoint
+
 
 # Data structure to store mesh
 mutable struct Mesh

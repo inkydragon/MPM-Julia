@@ -1,5 +1,7 @@
 module moduleParticleGen
 
+include("MyGrid.jl")
+include("MyMaterialPoint.jl")
 using  moduleGrid
 using  moduleMaterialPoint
 
