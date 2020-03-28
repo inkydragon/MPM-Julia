@@ -100,7 +100,8 @@ const c           = 3.0 / (pi*nonlocalRad^2)
 
 # fix boundary conditions on the grid
 for iIndex in 1:thisGrid.iNodes
-    if ( length(find(fixGridNodes .== iIndex)) != 0 )
+    _tmp_arr = fixGridNodes .== iIndex
+    if ( length((LinearIndices(_tmp_arr))[findall(_tmp_arr)]) != 0 )
         thisGrid.GridPoints[iIndex].v2Fixed = [true;true]
     end
 end
