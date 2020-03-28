@@ -10,6 +10,7 @@
 
 # cd("E:\\MyPublications\\MPM_Julia\\Codes\\Classic_2D_SteelAluminum")
 using Printf
+using LinearAlgebra
 import PyPlot
 
 push!(LOAD_PATH, pwd())

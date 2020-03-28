@@ -15,6 +15,7 @@
 # In Julia terminal, press ; to enter SHELL commands, very convenient.
 
 using Printf
+using LinearAlgebra
 import PyPlot
 
 push!(LOAD_PATH, pwd())

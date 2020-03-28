@@ -5,6 +5,7 @@
 # cd("E:\\MyPublications\\MPM_Julia\\Codes\\CPDI_3D_T4")
 # import Gadfly
 using Printf
+using LinearAlgebra
 import PyPlot
 
 pyFig_RealTime = PyPlot.figure("MPM 3D", figsize=(18/2.54, 18/2.54), edgecolor="white", facecolor="white")

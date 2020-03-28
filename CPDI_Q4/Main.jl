@@ -2,6 +2,7 @@
 # cd("E:\\MyCodes\\Julia\\CPDI_Q4")
 # import Gadfly
 using Printf
+using LinearAlgebra
 import PyPlot
 
 pyFig_RealTime = PyPlot.figure("MPM Two-Disk Impact", figsize=(8, 8))
