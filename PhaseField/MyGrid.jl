@@ -137,7 +137,7 @@ function getGridPointsForParticles(
     particles::Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic},
     thisGrid::mpmGrid
 )
-    set = IntSet()
+    set = BitSet()
     for p=1:length(particles)
         thisParticle = particles[p]
         nearPoints   = getAdjacentGridPoints(thisParticle, thisGrid)

@@ -79,7 +79,7 @@ function fe_matrices(
     fe  = zeros(4)
     sparseCount = 0
 
-    real_dofs = IntSet()
+    real_dofs = BitSet()
 
     for iE=1:mesh.elemCount
         if haskey(mesh.elem2MP,iE) == false continue end  # skip elements with no material points
