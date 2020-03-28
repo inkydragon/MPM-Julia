@@ -123,106 +123,107 @@ plot_StrainEnergy  = Array{Real}(0)
 
 # main analysis loop
 for fTime in 0.0:fTimeIncrement:fTimeEnd
-    time_ns();
-    #reset grid---------------------------------------------------------------------
-    for iIndex in 1:1:thisGrid.iNodes
-        thisGrid.GridPoints[iIndex].fMass      = 0.0
-        thisGrid.GridPoints[iIndex].v2Momentum = [0.0; 0.0]
-        thisGrid.GridPoints[iIndex].v2Force    = [0.0; 0.0]
-        # Note that Julia stores arrays column wise, so should use column vectors
-    end
-    # material to grid ------------------------------------------------------------
-    for iIndex_MP in 1:length(allMaterialPoint)
-        thisMaterialPoint      = allMaterialPoint[iIndex_MP]
-        thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints(thisMaterialPoint, thisGrid)
-        for iIndex in 1:length(thisAdjacentGridPoints)
-            # sina, be careful here, this might not be by reference and might not be good for assignment
-            # ???
-            thisGridPoint    = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
-            fShapeValue, v2ShapeGradient  = moduleBasis.getShapeAndGradient_Classic(thisMaterialPoint, thisGridPoint, thisGrid)
 
-            # mass, momentum, internal force and external force
-            thisGridPoint.fMass      += fShapeValue * thisMaterialPoint.fMass
-            thisGridPoint.v2Momentum += fShapeValue * thisMaterialPoint.fMass * thisMaterialPoint.v2Velocity
-            fVolume                   = thisMaterialPoint.fVolume
-            thisGridPoint.v2Force[1] -= fVolume * (v2ShapeGradient[1]*thisMaterialPoint.v3Stress[1] +
-                                                    v2ShapeGradient[2]*thisMaterialPoint.v3Stress[3])
-            thisGridPoint.v2Force[2] -= fVolume * (v2ShapeGradient[2]*thisMaterialPoint.v3Stress[2] +
-                                                    v2ShapeGradient[1]*thisMaterialPoint.v3Stress[3])
-            # unlike Matlab you do not need ... to break codes into lines
-            # external forces
-            thisGridPoint.v2Force    += fShapeValue*thisMaterialPoint.v2ExternalForce
+    fProfiler_Particle2Grid += @elapsed begin
+        #reset grid---------------------------------------------------------------------
+        for iIndex in 1:1:thisGrid.iNodes
+            thisGrid.GridPoints[iIndex].fMass      = 0.0
+            thisGrid.GridPoints[iIndex].v2Momentum = [0.0; 0.0]
+            thisGrid.GridPoints[iIndex].v2Force    = [0.0; 0.0]
+            # Note that Julia stores arrays column wise, so should use column vectors
         end
-    end
-    # update grid momentum and apply boundary conditions ---------------------
-    for iIndex_GP in 1:1:thisGrid.iNodes
-        thisGridPoint = thisGrid.GridPoints[iIndex_GP]
-        thisGridPoint.v2Momentum += thisGridPoint.v2Force * fTimeIncrement
+        # material to grid ------------------------------------------------------------
+        for iIndex_MP in 1:length(allMaterialPoint)
+            thisMaterialPoint      = allMaterialPoint[iIndex_MP]
+            thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints(thisMaterialPoint, thisGrid)
+            for iIndex in 1:length(thisAdjacentGridPoints)
+                # sina, be careful here, this might not be by reference and might not be good for assignment
+                # ???
+                thisGridPoint    = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
+                fShapeValue, v2ShapeGradient  = moduleBasis.getShapeAndGradient_Classic(thisMaterialPoint, thisGridPoint, thisGrid)
 
-        if(thisGridPoint.v2Fixed[1] == true)
-            thisGridPoint.v2Momentum[1] = 0.0
-            thisGridPoint.v2Force[1]    = 0.0
-        end
-        if(thisGridPoint.v2Fixed[2] == true)
-            thisGridPoint.v2Momentum[2] = 0.0
-            thisGridPoint.v2Force[2]    = 0.0
-        end
-    end
-
-    fProfiler_Particle2Grid += toq()
-
-    time_ns();
-    # ------------------------------------------------------------------------
-    # grid to material -------------------------------------------------------
-    for iIndex_MP in 1:1:length(allMaterialPoint)
-        thisMaterialPoint      = allMaterialPoint[iIndex_MP]
-        thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints(thisMaterialPoint, thisGrid)
-        v2CentroidIncrement = zeros(2)
-        for iIndex in 1:1:length(thisAdjacentGridPoints)
-            thisGridPoint   = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
-            #fShapeValue     = moduleBasis.getShapeValue_Classic(thisMaterialPoint, thisGridPoint, thisGrid)
-            #v2ShapeGradient = moduleBasis.getShapeGradient_Classic(thisMaterialPoint, thisGridPoint, thisGrid)
-            fShapeValue, v2ShapeGradient  = moduleBasis.getShapeAndGradient_Classic(thisMaterialPoint, thisGridPoint, thisGrid)
-
-            v2GridPointVelocity = zeros(2)
-            if(thisGridPoint.fMass > 1.0e-8)
-                v2GridPointVelocity = thisGridPoint.v2Momentum / thisGridPoint.fMass
-                thisMaterialPoint.v2Velocity += (fShapeValue * thisGridPoint.v2Force / thisGridPoint.fMass) * fTimeIncrement
-                # thisMaterialPoint.v2Centroid += (fShapeValue * thisGridPoint.v2Momentum / thisGridPoint.fMass) * fTimeIncrement
-                v2CentroidIncrement += (fShapeValue * thisGridPoint.v2Momentum / thisGridPoint.fMass) * fTimeIncrement
+                # mass, momentum, internal force and external force
+                thisGridPoint.fMass      += fShapeValue * thisMaterialPoint.fMass
+                thisGridPoint.v2Momentum += fShapeValue * thisMaterialPoint.fMass * thisMaterialPoint.v2Velocity
+                fVolume                   = thisMaterialPoint.fVolume
+                thisGridPoint.v2Force[1] -= fVolume * (v2ShapeGradient[1]*thisMaterialPoint.v3Stress[1] +
+                                                        v2ShapeGradient[2]*thisMaterialPoint.v3Stress[3])
+                thisGridPoint.v2Force[2] -= fVolume * (v2ShapeGradient[2]*thisMaterialPoint.v3Stress[2] +
+                                                        v2ShapeGradient[1]*thisMaterialPoint.v3Stress[3])
+                # unlike Matlab you do not need ... to break codes into lines
+                # external forces
+                thisGridPoint.v2Force    += fShapeValue*thisMaterialPoint.v2ExternalForce
             end
-
-            # from (2011) A convected particle domain interpolation technique to extend ...
-            # Note that m22DeformationGradientIncrement was initialised to identity matrix
-            thisMaterialPoint.m22DeformationGradientIncrement += v2GridPointVelocity*transpose(v2ShapeGradient)*fTimeIncrement;
         end
-        thisMaterialPoint.v2Centroid += v2CentroidIncrement
-        thisMaterialPoint.m22DeformationGradient = thisMaterialPoint.m22DeformationGradientIncrement * thisMaterialPoint.m22DeformationGradient
-        v3StrainIncrement = zeros(3)
-        v3StrainIncrement[1] = thisMaterialPoint.m22DeformationGradientIncrement[1,1] - 1.0
-        v3StrainIncrement[2] = thisMaterialPoint.m22DeformationGradientIncrement[2,2] - 1.0
-        v3StrainIncrement[3] = thisMaterialPoint.m22DeformationGradientIncrement[1,2] +
-                                thisMaterialPoint.m22DeformationGradientIncrement[2,1]
-        thisMaterialPoint.m22DeformationGradientIncrement = Matrix{Float64}(I, 2, 2)
+        # update grid momentum and apply boundary conditions ---------------------
+        for iIndex_GP in 1:1:thisGrid.iNodes
+            thisGridPoint = thisGrid.GridPoints[iIndex_GP]
+            thisGridPoint.v2Momentum += thisGridPoint.v2Force * fTimeIncrement
 
-        fE        = thisMaterialPoint.fElasticModulus;
-        fNu       = thisMaterialPoint.fPoissonRatio
-        fConstant = fE/(1.0 + fNu)/(1.0 - 2.0*fNu)
-
-        thisMaterialPoint.v3Strain[1] += v3StrainIncrement[1]
-        thisMaterialPoint.v3Strain[2] += v3StrainIncrement[2]
-        thisMaterialPoint.v3Strain[3] += v3StrainIncrement[3]
-
-
-        thisMaterialPoint.v3Stress[1] += fConstant * ((1.0-fNu)*v3StrainIncrement[1] + fNu*v3StrainIncrement[2])
-        thisMaterialPoint.v3Stress[2] += fConstant * ((1.0-fNu)*v3StrainIncrement[2] + fNu*v3StrainIncrement[1])
-        thisMaterialPoint.v3Stress[3] += fConstant * ((0.5-fNu)*v3StrainIncrement[3])
-
-        thisMaterialPoint.fVolume      = det(thisMaterialPoint.m22DeformationGradient) * thisMaterialPoint.fVolumeInitial
-        thisMaterialPoint.v2Momentum   = thisMaterialPoint.v2Velocity * thisMaterialPoint.fMass
+            if(thisGridPoint.v2Fixed[1] == true)
+                thisGridPoint.v2Momentum[1] = 0.0
+                thisGridPoint.v2Force[1]    = 0.0
+            end
+            if(thisGridPoint.v2Fixed[2] == true)
+                thisGridPoint.v2Momentum[2] = 0.0
+                thisGridPoint.v2Force[2]    = 0.0
+            end
+        end
+    # fProfiler_Particle2Grid += toq()
     end
 
-    fProfiler_Grid2Particle += toq()
+    fProfiler_Grid2Particle += @elapsed begin
+        # ------------------------------------------------------------------------
+        # grid to material -------------------------------------------------------
+        for iIndex_MP in 1:1:length(allMaterialPoint)
+            thisMaterialPoint      = allMaterialPoint[iIndex_MP]
+            thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints(thisMaterialPoint, thisGrid)
+            v2CentroidIncrement = zeros(2)
+            for iIndex in 1:1:length(thisAdjacentGridPoints)
+                thisGridPoint   = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
+                #fShapeValue     = moduleBasis.getShapeValue_Classic(thisMaterialPoint, thisGridPoint, thisGrid)
+                #v2ShapeGradient = moduleBasis.getShapeGradient_Classic(thisMaterialPoint, thisGridPoint, thisGrid)
+                fShapeValue, v2ShapeGradient  = moduleBasis.getShapeAndGradient_Classic(thisMaterialPoint, thisGridPoint, thisGrid)
+
+                v2GridPointVelocity = zeros(2)
+                if(thisGridPoint.fMass > 1.0e-8)
+                    v2GridPointVelocity = thisGridPoint.v2Momentum / thisGridPoint.fMass
+                    thisMaterialPoint.v2Velocity += (fShapeValue * thisGridPoint.v2Force / thisGridPoint.fMass) * fTimeIncrement
+                    # thisMaterialPoint.v2Centroid += (fShapeValue * thisGridPoint.v2Momentum / thisGridPoint.fMass) * fTimeIncrement
+                    v2CentroidIncrement += (fShapeValue * thisGridPoint.v2Momentum / thisGridPoint.fMass) * fTimeIncrement
+                end
+
+                # from (2011) A convected particle domain interpolation technique to extend ...
+                # Note that m22DeformationGradientIncrement was initialised to identity matrix
+                thisMaterialPoint.m22DeformationGradientIncrement += v2GridPointVelocity*transpose(v2ShapeGradient)*fTimeIncrement;
+            end
+            thisMaterialPoint.v2Centroid += v2CentroidIncrement
+            thisMaterialPoint.m22DeformationGradient = thisMaterialPoint.m22DeformationGradientIncrement * thisMaterialPoint.m22DeformationGradient
+            v3StrainIncrement = zeros(3)
+            v3StrainIncrement[1] = thisMaterialPoint.m22DeformationGradientIncrement[1,1] - 1.0
+            v3StrainIncrement[2] = thisMaterialPoint.m22DeformationGradientIncrement[2,2] - 1.0
+            v3StrainIncrement[3] = thisMaterialPoint.m22DeformationGradientIncrement[1,2] +
+                                    thisMaterialPoint.m22DeformationGradientIncrement[2,1]
+            thisMaterialPoint.m22DeformationGradientIncrement = Matrix{Float64}(I, 2, 2)
+
+            fE        = thisMaterialPoint.fElasticModulus;
+            fNu       = thisMaterialPoint.fPoissonRatio
+            fConstant = fE/(1.0 + fNu)/(1.0 - 2.0*fNu)
+
+            thisMaterialPoint.v3Strain[1] += v3StrainIncrement[1]
+            thisMaterialPoint.v3Strain[2] += v3StrainIncrement[2]
+            thisMaterialPoint.v3Strain[3] += v3StrainIncrement[3]
+
+
+            thisMaterialPoint.v3Stress[1] += fConstant * ((1.0-fNu)*v3StrainIncrement[1] + fNu*v3StrainIncrement[2])
+            thisMaterialPoint.v3Stress[2] += fConstant * ((1.0-fNu)*v3StrainIncrement[2] + fNu*v3StrainIncrement[1])
+            thisMaterialPoint.v3Stress[3] += fConstant * ((0.5-fNu)*v3StrainIncrement[3])
+
+            thisMaterialPoint.fVolume      = det(thisMaterialPoint.m22DeformationGradient) * thisMaterialPoint.fVolumeInitial
+            thisMaterialPoint.v2Momentum   = thisMaterialPoint.v2Velocity * thisMaterialPoint.fMass
+        end
+    # fProfiler_Grid2Particle += toq()
+    end
 
     # ------------------------------------------------------------------------
     # calculating strain and kinetic energy for final results plot

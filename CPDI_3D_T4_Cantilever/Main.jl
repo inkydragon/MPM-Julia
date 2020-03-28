@@ -109,142 +109,143 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
     push!(plot_Time, fTime)
     push!(plot_Displacement, allMaterialPoint[918].v3Corner[3,4] - 3.5)#2.4433-1.5)#sina, remember 39
 
-    time_ns();
-    #reset grid------------------------------------
-    for iIndex in 1:1:thisGrid.iNodes
-        thisGrid.GridPoints[iIndex].fMass = 0.0
-        thisGrid.GridPoints[iIndex].v3Momentum = [0.0; 0.0; 0.0]
-        thisGrid.GridPoints[iIndex].v3Force = [0.0; 0.0; 0.0]
-    end
-    # material to grid -------------------------------------------------------
-    for iIndex_MP in 1:1:length(allMaterialPoint)
-        thisMaterialPoint = allMaterialPoint[iIndex_MP]
-        thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints_CPDI(allMaterialPoint[iIndex_MP], thisGrid)
-        for iIndex in 1:1:length(thisAdjacentGridPoints)
-            # sina, be careful here, this might not be by reference and might not be good for assignment
-            thisGridPoint = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
-
-            fShapeValue = moduleBasis.getShapeValue_CPDI_Tet4(thisMaterialPoint, thisGridPoint, thisGrid)
-            v3ShapeGradient = moduleBasis.getShapeGradient_CPDI_Tet4(thisMaterialPoint, thisGridPoint, thisGrid)
-
-            # mass
-            thisGridPoint.fMass += fShapeValue * thisMaterialPoint.fMass
-            # momentum
-            thisGridPoint.v3Momentum += fShapeValue * thisMaterialPoint.v3Momentum
-            # internal forces
-            fVolume = thisMaterialPoint.fVolume
-            thisGridPoint.v3Force[1] += -fVolume * (v3ShapeGradient[1]*thisMaterialPoint.v6Stress[1] + v3ShapeGradient[2]*thisMaterialPoint.v6Stress[4] + v3ShapeGradient[3]*thisMaterialPoint.v6Stress[6])
-            thisGridPoint.v3Force[2] += -fVolume * (v3ShapeGradient[2]*thisMaterialPoint.v6Stress[2] + v3ShapeGradient[1]*thisMaterialPoint.v6Stress[4] + v3ShapeGradient[3]*thisMaterialPoint.v6Stress[5])
-            thisGridPoint.v3Force[3] += -fVolume * (v3ShapeGradient[3]*thisMaterialPoint.v6Stress[3] + v3ShapeGradient[1]*thisMaterialPoint.v6Stress[6] + v3ShapeGradient[2]*thisMaterialPoint.v6Stress[5])
-            # # external forces
-            thisGridPoint.v3Force += fShapeValue*thisMaterialPoint.v3ExternalForce
+    fProfiler_Particle2Grid += @elapsed begin
+        #reset grid------------------------------------
+        for iIndex in 1:1:thisGrid.iNodes
+            thisGrid.GridPoints[iIndex].fMass = 0.0
+            thisGrid.GridPoints[iIndex].v3Momentum = [0.0; 0.0; 0.0]
+            thisGrid.GridPoints[iIndex].v3Force = [0.0; 0.0; 0.0]
         end
-    end
-    # update grid momentum and apply boundary conditions ---------------------
-    for iIndex_GP in 1:1:thisGrid.iNodes
-        thisGridPoint = thisGrid.GridPoints[iIndex_GP]
+        # material to grid -------------------------------------------------------
+        for iIndex_MP in 1:1:length(allMaterialPoint)
+            thisMaterialPoint = allMaterialPoint[iIndex_MP]
+            thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints_CPDI(allMaterialPoint[iIndex_MP], thisGrid)
+            for iIndex in 1:1:length(thisAdjacentGridPoints)
+                # sina, be careful here, this might not be by reference and might not be good for assignment
+                thisGridPoint = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
 
-        thisGridPoint.v3Momentum += thisGridPoint.v3Force * fTimeIncrement
+                fShapeValue = moduleBasis.getShapeValue_CPDI_Tet4(thisMaterialPoint, thisGridPoint, thisGrid)
+                v3ShapeGradient = moduleBasis.getShapeGradient_CPDI_Tet4(thisMaterialPoint, thisGridPoint, thisGrid)
 
-        if(thisGridPoint.v3Fixed[1] == true)
-            thisGridPoint.v3Momentum[1] = 0.0
-            thisGridPoint.v3Force[1] = 0.0
-        end
-        if(thisGridPoint.v3Fixed[2] == true)
-            thisGridPoint.v3Momentum[2] = 0.0
-            thisGridPoint.v3Force[2] = 0.0
-        end
-        if(thisGridPoint.v3Fixed[3] == true)
-            thisGridPoint.v3Momentum[3] = 0.0
-            thisGridPoint.v3Force[3] = 0.0
-        end
-    end
-
-    fProfiler_Particle2Grid += toq()
-
-    time_ns()
-    # ------------------------------------------------------------------------
-    # grid to material -------------------------------------------------------
-    for iIndex_MP in 1:1:length(allMaterialPoint)
-        thisMaterialPoint = allMaterialPoint[iIndex_MP]
-        thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints_CPDI(thisMaterialPoint, thisGrid)
-        for iIndex in 1:1:length(thisAdjacentGridPoints)
-            thisGridPoint = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
-
-            fShapeValue = moduleBasis.getShapeValue_CPDI_Tet4(thisMaterialPoint, thisGridPoint, thisGrid)
-            v3ShapeGradient = moduleBasis.getShapeGradient_CPDI_Tet4(thisMaterialPoint, thisGridPoint, thisGrid)
-
-            v3GridPointVelocity = zeros(3)
-            if(thisGridPoint.fMass > 1.0e-16)
-                v3GridPointVelocity = thisGridPoint.v3Momentum / thisGridPoint.fMass
-
-                thisMaterialPoint.v3Velocity += (fShapeValue * thisGridPoint.v3Force / thisGridPoint.fMass) * fTimeIncrement
+                # mass
+                thisGridPoint.fMass += fShapeValue * thisMaterialPoint.fMass
+                # momentum
+                thisGridPoint.v3Momentum += fShapeValue * thisMaterialPoint.v3Momentum
+                # internal forces
+                fVolume = thisMaterialPoint.fVolume
+                thisGridPoint.v3Force[1] += -fVolume * (v3ShapeGradient[1]*thisMaterialPoint.v6Stress[1] + v3ShapeGradient[2]*thisMaterialPoint.v6Stress[4] + v3ShapeGradient[3]*thisMaterialPoint.v6Stress[6])
+                thisGridPoint.v3Force[2] += -fVolume * (v3ShapeGradient[2]*thisMaterialPoint.v6Stress[2] + v3ShapeGradient[1]*thisMaterialPoint.v6Stress[4] + v3ShapeGradient[3]*thisMaterialPoint.v6Stress[5])
+                thisGridPoint.v3Force[3] += -fVolume * (v3ShapeGradient[3]*thisMaterialPoint.v6Stress[3] + v3ShapeGradient[1]*thisMaterialPoint.v6Stress[6] + v3ShapeGradient[2]*thisMaterialPoint.v6Stress[5])
+                # # external forces
+                thisGridPoint.v3Force += fShapeValue*thisMaterialPoint.v3ExternalForce
             end
-
-            thisMaterialPoint.m33DeformationGradientIncrement += v3GridPointVelocity*transpose(v3ShapeGradient)*fTimeIncrement;
         end
+        # update grid momentum and apply boundary conditions ---------------------
+        for iIndex_GP in 1:1:thisGrid.iNodes
+            thisGridPoint = thisGrid.GridPoints[iIndex_GP]
 
-        thisMaterialPoint.m33DeformationGradient = thisMaterialPoint.m33DeformationGradientIncrement * thisMaterialPoint.m33DeformationGradient
-        thisMaterialPoint.m33DeformationGradientIncrement = Matrix{Float64}(I, 3, 3)
+            thisGridPoint.v3Momentum += thisGridPoint.v3Force * fTimeIncrement
 
-        fE = thisMaterialPoint.fElasticModulus;
-        fNu = thisMaterialPoint.fPoissonRatio
-
-        # for a Neo_Hookean model, (2011) A convected particle domain interpolation technique to extend
-        fLame1 = 0.5*fE / (1.0 + fNu)
-        fLame2 = fNu*fE / ((1+fNu)*(1.0-2.0*fNu))
-
-        mF = thisMaterialPoint.m33DeformationGradient
-        fJ = det(mF)
-
-        mP = fLame2*log(fJ)/fJ * Matrix{Float64}(I, 3, 3) + fLame1/fJ*(mF*mF'-Matrix{Float64}(I, 3, 3))
-        thisMaterialPoint.v6Stress[1] = mP[1,1]
-        thisMaterialPoint.v6Stress[2] = mP[2,2]
-        thisMaterialPoint.v6Stress[3] = mP[3,3]
-        thisMaterialPoint.v6Stress[4] = mP[1,2]
-        thisMaterialPoint.v6Stress[5] = mP[2,3]
-        thisMaterialPoint.v6Stress[6] = mP[3,1]
-
-        thisMaterialPoint.v3Momentum = thisMaterialPoint.v3Velocity * thisMaterialPoint.fMass
+            if(thisGridPoint.v3Fixed[1] == true)
+                thisGridPoint.v3Momentum[1] = 0.0
+                thisGridPoint.v3Force[1] = 0.0
+            end
+            if(thisGridPoint.v3Fixed[2] == true)
+                thisGridPoint.v3Momentum[2] = 0.0
+                thisGridPoint.v3Force[2] = 0.0
+            end
+            if(thisGridPoint.v3Fixed[3] == true)
+                thisGridPoint.v3Momentum[3] = 0.0
+                thisGridPoint.v3Force[3] = 0.0
+            end
+        end
+        # fProfiler_Particle2Grid += toq()
     end
-    fProfiler_Grid2Particle += toq()
 
-    time_ns()
-    # calculate corner increments---------------------------------------------
-    for iIndex_MP in 1:1:length(allMaterialPoint)
-        thisMaterialPoint = allMaterialPoint[iIndex_MP]
-        thisMaterialPoint.v3Centroid = zeros(3) # reset, to be calculated shortly
-        for indexCorner = 1:1:size(thisMaterialPoint.v3Corner, 2)
-            # v3CornerCoordinate = thisMaterialPoint.v3Corner[:, indexCorner]
-            thisCorner = thisMaterialPoint.v3Corner[:, indexCorner]
-            v3CornerIncrement = zeros(3)
-
-            thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints(thisCorner, thisGrid)
+    fProfiler_Grid2Particle += @elapsed begin
+        # ------------------------------------------------------------------------
+        # grid to material -------------------------------------------------------
+        for iIndex_MP in 1:1:length(allMaterialPoint)
+            thisMaterialPoint = allMaterialPoint[iIndex_MP]
+            thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints_CPDI(thisMaterialPoint, thisGrid)
             for iIndex in 1:1:length(thisAdjacentGridPoints)
                 thisGridPoint = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
 
-                v3Distance = thisCorner - thisGridPoint.v3Position
-                v3CellLength = thisGrid.v3Length_Cell
-
-                fShapeValue = moduleBasis.getShapeValue_Classic(v3Distance, v3CellLength)
+                fShapeValue = moduleBasis.getShapeValue_CPDI_Tet4(thisMaterialPoint, thisGridPoint, thisGrid)
+                v3ShapeGradient = moduleBasis.getShapeGradient_CPDI_Tet4(thisMaterialPoint, thisGridPoint, thisGrid)
 
                 v3GridPointVelocity = zeros(3)
                 if(thisGridPoint.fMass > 1.0e-16)
                     v3GridPointVelocity = thisGridPoint.v3Momentum / thisGridPoint.fMass
+
+                    thisMaterialPoint.v3Velocity += (fShapeValue * thisGridPoint.v3Force / thisGridPoint.fMass) * fTimeIncrement
                 end
 
-                v3CornerIncrement += fShapeValue * v3GridPointVelocity * fTimeIncrement
-                # thisMaterialPoint.v3Corner[:, indexCorner] += fShapeValue * v3GridPointVelocity * fTimeIncrement
+                thisMaterialPoint.m33DeformationGradientIncrement += v3GridPointVelocity*transpose(v3ShapeGradient)*fTimeIncrement;
             end
-            thisMaterialPoint.v3Corner[:, indexCorner] += v3CornerIncrement
 
-            thisMaterialPoint.v3Centroid += 1.0/4.0 * thisMaterialPoint.v3Corner[:, indexCorner] # 4.0 for 4 corners, the sum will the average of all corners
+            thisMaterialPoint.m33DeformationGradient = thisMaterialPoint.m33DeformationGradientIncrement * thisMaterialPoint.m33DeformationGradient
+            thisMaterialPoint.m33DeformationGradientIncrement = Matrix{Float64}(I, 3, 3)
+
+            fE = thisMaterialPoint.fElasticModulus;
+            fNu = thisMaterialPoint.fPoissonRatio
+
+            # for a Neo_Hookean model, (2011) A convected particle domain interpolation technique to extend
+            fLame1 = 0.5*fE / (1.0 + fNu)
+            fLame2 = fNu*fE / ((1+fNu)*(1.0-2.0*fNu))
+
+            mF = thisMaterialPoint.m33DeformationGradient
+            fJ = det(mF)
+
+            mP = fLame2*log(fJ)/fJ * Matrix{Float64}(I, 3, 3) + fLame1/fJ*(mF*mF'-Matrix{Float64}(I, 3, 3))
+            thisMaterialPoint.v6Stress[1] = mP[1,1]
+            thisMaterialPoint.v6Stress[2] = mP[2,2]
+            thisMaterialPoint.v6Stress[3] = mP[3,3]
+            thisMaterialPoint.v6Stress[4] = mP[1,2]
+            thisMaterialPoint.v6Stress[5] = mP[2,3]
+            thisMaterialPoint.v6Stress[6] = mP[3,1]
+
+            thisMaterialPoint.v3Momentum = thisMaterialPoint.v3Velocity * thisMaterialPoint.fMass
         end
-
-        thisMaterialPoint.fVolume = det(thisMaterialPoint.m33DeformationGradient) * thisMaterialPoint.fVolumeInitial
+        # fProfiler_Grid2Particle += toq()
     end
 
-    fProfiler_Corners += toq()
+    fProfiler_Corners += @elapsed begin
+        # calculate corner increments---------------------------------------------
+        for iIndex_MP in 1:1:length(allMaterialPoint)
+            thisMaterialPoint = allMaterialPoint[iIndex_MP]
+            thisMaterialPoint.v3Centroid = zeros(3) # reset, to be calculated shortly
+            for indexCorner = 1:1:size(thisMaterialPoint.v3Corner, 2)
+                # v3CornerCoordinate = thisMaterialPoint.v3Corner[:, indexCorner]
+                thisCorner = thisMaterialPoint.v3Corner[:, indexCorner]
+                v3CornerIncrement = zeros(3)
+
+                thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints(thisCorner, thisGrid)
+                for iIndex in 1:1:length(thisAdjacentGridPoints)
+                    thisGridPoint = thisGrid.GridPoints[thisAdjacentGridPoints[iIndex]]
+
+                    v3Distance = thisCorner - thisGridPoint.v3Position
+                    v3CellLength = thisGrid.v3Length_Cell
+
+                    fShapeValue = moduleBasis.getShapeValue_Classic(v3Distance, v3CellLength)
+
+                    v3GridPointVelocity = zeros(3)
+                    if(thisGridPoint.fMass > 1.0e-16)
+                        v3GridPointVelocity = thisGridPoint.v3Momentum / thisGridPoint.fMass
+                    end
+
+                    v3CornerIncrement += fShapeValue * v3GridPointVelocity * fTimeIncrement
+                    # thisMaterialPoint.v3Corner[:, indexCorner] += fShapeValue * v3GridPointVelocity * fTimeIncrement
+                end
+                thisMaterialPoint.v3Corner[:, indexCorner] += v3CornerIncrement
+
+                thisMaterialPoint.v3Centroid += 1.0/4.0 * thisMaterialPoint.v3Corner[:, indexCorner] # 4.0 for 4 corners, the sum will the average of all corners
+            end
+
+            thisMaterialPoint.fVolume = det(thisMaterialPoint.m33DeformationGradient) * thisMaterialPoint.fVolumeInitial
+        end
+        # fProfiler_Corners += toq()
+    end
 
     # ------------------------------------------------------------------------
     # consol output
