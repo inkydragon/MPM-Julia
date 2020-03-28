@@ -1,4 +1,5 @@
 using Printf
+using SparseArrays
 include("mesh.jl")
 include("MyMaterialPoint.jl")
 import FeMesh

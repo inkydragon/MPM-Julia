@@ -4,6 +4,7 @@ module FeMesh
 # Vinh Phu Nguyen
 # (nvinhphu@gmail.com)
 using Printf
+using DelimitedFiles
 using PyPlot
 include("MyMaterialPoint.jl")
 import moduleMaterialPoint
@@ -173,8 +174,8 @@ function plot_mesh(mesh::Mesh)
         xpt[n] = mesh.nodes[1,mesh.elements[ord[n],e]]
         ypt[n] = mesh.nodes[2,mesh.elements[ord[n],e]]
         end
-        plot(xpt,ypt, color="blue", linewidth=2.0, linestyle="-")
-        hold(true)
+        PyPlot.plot(xpt,ypt, color="blue", linewidth=2.0, linestyle="-")
+        PyPlot.hold(true)
     end
 end
 

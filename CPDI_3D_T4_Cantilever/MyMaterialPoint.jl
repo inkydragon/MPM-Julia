@@ -2,6 +2,7 @@ module moduleMaterialPoint
 
 using Printf
 using LinearAlgebra
+using DelimitedFiles
 mutable struct mpmMaterialPoint_Tet4   #material point container
     fMass::Float64
     fVolumeInitial::Float64
