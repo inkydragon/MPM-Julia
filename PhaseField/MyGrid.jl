@@ -18,7 +18,7 @@ end
 #  mpmGridPoint
 ###################################################
 
-type mpmGridPoint
+mutable struct mpmGridPoint
     v2Fixed     :: Array{Bool}               # fix in two directions
     fMass       :: Float64                   # mass of a g rid point
     v2Position  :: Array{Float64}            # coordinates
@@ -41,7 +41,7 @@ end
 # mpmGrid, contains an array of mpmGridPoints
 ###################################################
 
-type mpmGrid
+mutable struct mpmGrid
     v2Length_Grid     :: Array{Float64}    # dimensions of the grid in 2 directions
     v2Nodes           :: Array{Int64}      # number of grid nodes along x and y direction
     iNodes            :: Int64             # total number of grid nodes

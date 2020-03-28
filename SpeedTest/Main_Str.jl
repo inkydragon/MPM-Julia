@@ -5,7 +5,7 @@
 
 import PyPlot
 
-type testDataStructure
+mutable struct testDataStructure
     vMember::Array{Float64}
 
     function testDataStructure()

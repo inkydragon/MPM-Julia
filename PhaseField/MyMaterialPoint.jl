@@ -2,7 +2,7 @@ module moduleMaterialPoint
 
 export mpmMaterialPoint_2D_Classic
 
-type mpmMaterialPoint_2D_Classic   #material point container
+mutable struct mpmMaterialPoint_2D_Classic   #material point container
     fMass           :: Float64
     fVolumeInitial  :: Float64
     fVolume         :: Float64

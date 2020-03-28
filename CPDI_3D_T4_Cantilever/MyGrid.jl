@@ -13,7 +13,7 @@ function index3DTo1D(i::Int, j::Int, k::Int, nColumns::Int, nRows::Int, nLayers:
     return(Int(index))
 end
 
-type mpmGridPoint
+mutable struct mpmGridPoint
     v3Fixed::Array{Bool}
     fMass::Real
     v3Position::Array{Float64}
@@ -29,7 +29,7 @@ type mpmGridPoint
     end
 end
 
-type mpmGrid   #grid container
+mutable struct mpmGrid   #grid container
     v3Length_Grid::Array{Float64}
     v3Nodes::Array{Int}
     iNodes::Int

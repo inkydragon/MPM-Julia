@@ -1,5 +1,5 @@
 module moduleMaterialPoint
-type mpmMaterialPoint_Tet4   #material point container
+mutable struct mpmMaterialPoint_Tet4   #material point container
     fMass::Float64
     fVolumeInitial::Float64
     fVolume::Float64

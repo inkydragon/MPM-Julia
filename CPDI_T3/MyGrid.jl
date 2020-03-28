@@ -14,7 +14,7 @@ function indexDoubleToSingle(i::Int, j::Int, nRows::Int, nColumns::Int)
     return(Int(index))
 end
 
-type mpmGridPoint
+mutable struct mpmGridPoint
     bFixed_x::Bool
     bFixed_y::Bool
     fMass::Real
@@ -30,7 +30,7 @@ type mpmGridPoint
     end
 end
 
-type mpmGrid   #grid container
+mutable struct mpmGrid   #grid container
     fLength_Grid_x::Real
     fLength_Grid_y::Real
     iNodes_x::Int

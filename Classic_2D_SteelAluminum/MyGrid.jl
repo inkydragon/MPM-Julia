@@ -13,7 +13,7 @@ function index2DTo1D(i::Int64, j::Int64, nColumns::Int64, nRows::Int64)
     return(Int64(index))
 end
 
-type mpmGridPoint
+mutable struct mpmGridPoint
     v2Fixed::Array{Bool}
     fMass::Float64
     v2Position::Array{Float64}
@@ -31,7 +31,7 @@ type mpmGridPoint
     end
 end
 
-type mpmGrid   #grid container
+mutable struct mpmGrid   #grid container
     v2Length_Grid::Array{Float64}
     v2Nodes::Array{Int64}
     iNodes::Int64

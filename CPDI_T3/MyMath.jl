@@ -1,6 +1,6 @@
 module moduleMath
 
-type Vector2D   #node container
+mutable struct Vector2D   #node container
     fx::Real
     fy::Real
 
@@ -12,7 +12,7 @@ type Vector2D   #node container
     end
 end
 
-type Vector3D   #node container
+mutable struct Vector3D   #node container
     f1::Real
     f2::Real
     f3::Real

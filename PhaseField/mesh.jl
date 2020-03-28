@@ -7,7 +7,7 @@ import moduleMaterialPoint
 using PyPlot
 
 # Data structure to store mesh
-type Mesh
+mutable struct Mesh
     dim        :: Int
     lengthX    :: Float64
     lengthY    :: Float64

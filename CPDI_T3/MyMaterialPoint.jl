@@ -1,7 +1,7 @@
 module moduleMaterialPoint
 import moduleMath #sina, do not use include here, since you have already included the module in Main.jl
 
-type mpmMaterialPoint   #material point container
+mutable struct mpmMaterialPoint   #material point container
     fMass::Real
     fVolumeInitial::Real
     fVolume::Real
