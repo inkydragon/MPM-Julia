@@ -70,8 +70,8 @@ for iIndex_MP = 1:1:length(thisMaterialDomain_02)
     thisMaterialDomain_02[iIndex_MP].v2Momentum = fMass*thisMaterialDomain_02[iIndex_MP].v2Velocity
     thisMaterialDomain_02[iIndex_MP].v2ExternalForce = [0.0; -fGravity*fMass]
 
-    thisMaterialDomain_02[iIndex_MP].m22DeformationGradient = eye(2,2)
-    thisMaterialDomain_02[iIndex_MP].m22DeformationGradientIncrement = eye(2,2)
+    thisMaterialDomain_02[iIndex_MP].m22DeformationGradient = Matrix{Float64}(I, 2, 2)
+    thisMaterialDomain_02[iIndex_MP].m22DeformationGradientIncrement = Matrix{Float64}(I, 2, 2)
 
     push!(allMaterialPoint, thisMaterialDomain_02[iIndex_MP])
 end
@@ -209,7 +209,7 @@ while fTime < fTimeEnd
         v3StrainIncrement[2] = thisMaterialPoint.m22DeformationGradientIncrement[2,2] - 1.0
         v3StrainIncrement[3] = thisMaterialPoint.m22DeformationGradientIncrement[1,2] +
                                 thisMaterialPoint.m22DeformationGradientIncrement[2,1]
-        thisMaterialPoint.m22DeformationGradientIncrement = eye(2,2)
+        thisMaterialPoint.m22DeformationGradientIncrement = Matrix{Float64}(I, 2, 2)
 
         thisMaterialPoint.v3Strain[1] += v3StrainIncrement[1]
         thisMaterialPoint.v3Strain[2] += v3StrainIncrement[2]

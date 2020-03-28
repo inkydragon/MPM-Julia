@@ -41,8 +41,8 @@ for iIndex_MP in 1:1:length(thisMaterialDomain_03)
 
     thisMaterialDomain_03[iIndex_MP].mRadial1 = [0.5*fOffset, 0.0]
     thisMaterialDomain_03[iIndex_MP].mRadial2 = [0.0, 0.5*fOffset]
-    thisMaterialDomain_03[iIndex_MP].mDeformationGradient = eye(2,2)
-    thisMaterialDomain_03[iIndex_MP].mDeformationGradientIncrement = eye(2,2)
+    thisMaterialDomain_03[iIndex_MP].mDeformationGradient = Matrix{Float64}(I, 2, 2)
+    thisMaterialDomain_03[iIndex_MP].mDeformationGradientIncrement = Matrix{Float64}(I, 2, 2)
 
     push!(thisMaterialPoint, thisMaterialDomain_03[iIndex_MP])
 end
@@ -262,7 +262,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         thisMaterialPoint[iIndex_MP].v3Strain.f3 += thisMaterialPoint[iIndex_MP].v3StrainIncrement.f3
 
         thisMaterialPoint[iIndex_MP].mDeformationGradient = thisMaterialPoint[iIndex_MP].mDeformationGradientIncrement * thisMaterialPoint[iIndex_MP].mDeformationGradient
-        thisMaterialPoint[iIndex_MP].mDeformationGradientIncrement = eye(2,2)
+        thisMaterialPoint[iIndex_MP].mDeformationGradientIncrement = Matrix{Float64}(I, 2, 2)
 
         for iIndex_Corner = 1:1:size(thisMaterialPoint[iIndex_MP].mCorner, 1)
             thisMaterialPoint[iIndex_MP].mCorner[iIndex_Corner, :] += thisMaterialPoint[iIndex_MP].mCorner_Increment[iIndex_Corner, :]
@@ -288,7 +288,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         mF = thisMaterialPoint[iIndex_MP].mDeformationGradient
         fJ = det(mF)
 
-        mP = fLame2*log(fJ)/fJ * eye(2) + fLame1/fJ*(mF*mF'-eye(2))
+        mP = fLame2*log(fJ)/fJ * Matrix{Float64}(I, 2, 2) + fLame1/fJ*(mF*mF'-Matrix{Float64}(I, 2, 2))
         thisMaterialPoint[iIndex_MP].v3Stress.f1 = mP[1,1]
         thisMaterialPoint[iIndex_MP].v3Stress.f2 = mP[2,2]
         thisMaterialPoint[iIndex_MP].v3Stress.f3 = mP[1,2]

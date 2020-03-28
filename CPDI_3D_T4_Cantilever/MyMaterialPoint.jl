@@ -1,6 +1,7 @@
 module moduleMaterialPoint
 
 using Printf
+using LinearAlgebra
 mutable struct mpmMaterialPoint_Tet4   #material point container
     fMass::Float64
     fVolumeInitial::Float64
@@ -39,8 +40,8 @@ mutable struct mpmMaterialPoint_Tet4   #material point container
             zeros(3), # restraint
             zeros(3,4), # array of corner positions, 3d coordinates
             zeros(3,4), # array of corner position incretement
-            eye(3,3), # deformation gradient
-            eye(3,3), # deformation gradient increment
+            Matrix{Float64}(I, 3, 3), # deformation gradient
+            Matrix{Float64}(I, 3, 3), # deformation gradient increment
             zeros(6), # strain
             zeros(6), # strain increment
             zeros(6), # stress

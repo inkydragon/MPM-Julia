@@ -1,5 +1,6 @@
 module moduleMaterialPoint
 
+using LinearAlgebra
 export mpmMaterialPoint_2D_Classic
 
 mutable struct mpmMaterialPoint_2D_Classic   #material point container
@@ -37,8 +38,8 @@ mutable struct mpmMaterialPoint_2D_Classic   #material point container
             zeros(2), # momentum
             zeros(2), # external force
             zeros(2), # restraint
-            eye(2,2), # deformation gradient
-            eye(2,2), # deformation gradient increment
+            Matrix{Float64}(I, 2, 2), # deformation gradient
+            Matrix{Float64}(I, 2, 2), # deformation gradient increment
             zeros(3), # strain
             zeros(3), # stress
             10.0, 0.0, 0.0, # local history, color, phase field

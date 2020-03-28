@@ -1,5 +1,6 @@
 module moduleMaterialPoint
 
+using LinearAlgebra
 mutable struct mpmMaterialPoint_2D_Classic   #material point container
     fMass::Float64
     fVolumeInitial::Float64
@@ -35,8 +36,8 @@ mutable struct mpmMaterialPoint_2D_Classic   #material point container
             zeros(2), # external force
             zeros(2), # restraint
             zeros(2,4), # array of corner positions, 3d coordinates
-            eye(2,2), # deformation gradient
-            eye(2,2), # deformation gradient increment
+            Matrix{Float64}(I, 2, 2), # deformation gradient
+            Matrix{Float64}(I, 2, 2), # deformation gradient increment
             zeros(3), # strain
             zeros(3), # plastic strain
             0.0, # equivalent plastic strain
@@ -105,7 +106,7 @@ function getIncrement_Plastic(fE::Float64, fNu::Float64, fK0::Float64, fAlphaCur
 
     eye2   = [1.0; 1.0; 0.0];
     eye2x2 = [1.0 1.0 0.0; 1.0 1.0 0.0; 0.0 0.0 0.0];
-    I_dev  = eye(3) - 0.5*eye2x2;
+    I_dev  = Matrix{Float64}(I, 3, 3) - 0.5*eye2x2;
     I      = [1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 0.5];#0.5 to make engineering strain to physical one
     Iinv   = [1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 2.0];
 

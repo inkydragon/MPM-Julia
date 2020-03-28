@@ -1,4 +1,5 @@
 module moduleMaterialPoint
+using LinearAlgebra
 # material point container
 mutable struct mpmMaterialPoint_2D_Classic
     fMass            :: Float64
@@ -31,8 +32,8 @@ mutable struct mpmMaterialPoint_2D_Classic
             zeros(2), # external force
             zeros(2), # restraint
             zeros(2,4), # array of corner positions, 3d coordinates
-            eye(2,2), # deformation gradient
-            eye(2,2), # deformation gradient increment
+            Matrix{Float64}(I, 2, 2), # deformation gradient
+            Matrix{Float64}(I, 2, 2), # deformation gradient increment
             zeros(3), # strain
             zeros(3), # stress
             )

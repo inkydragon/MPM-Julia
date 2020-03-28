@@ -1,4 +1,6 @@
 module moduleMaterialPoint
+
+using LinearAlgebra
 include("MyMath.jl")
 import moduleMath #sina, do not use include here, since you have already included the module in Main.jl
 
@@ -46,8 +48,8 @@ mutable struct mpmMaterialPoint   #material point container
             zeros(0,2),
             ones(2),
             ones(2),
-            eye(2,2),
-            eye(2,2),
+            Matrix{Float64}(I, 2, 2),
+            Matrix{Float64}(I, 2, 2),
             moduleMath.Vector3D(0.0, 0.0, 0.0),
             moduleMath.Vector3D(0.0, 0.0, 0.0),
             moduleMath.Vector3D(0.0, 0.0, 0.0),
@@ -67,8 +69,8 @@ mutable struct mpmMaterialPoint   #material point container
             zeros(0,2),
             ones(2),
             ones(2),
-            eye(2,2),
-            eye(2,2),
+            Matrix{Float64}(I, 2, 2),
+            Matrix{Float64}(I, 2, 2),
             moduleMath.Vector3D(0.0, 0.0, 0.0),
             moduleMath.Vector3D(0.0, 0.0, 0.0),
             moduleMath.Vector3D(0.0, 0.0, 0.0),

@@ -41,8 +41,8 @@ for iIndex_MP = 1:1:length(thisMaterialDomain)
     thisMaterialDomain[iIndex_MP].v3Momentum = fMass*thisMaterialDomain[iIndex_MP].v3Velocity
     thisMaterialDomain[iIndex_MP].v3ExternalForce = [0.0; 0.0; -fGravity*fMass]
 
-    thisMaterialDomain[iIndex_MP].m33DeformationGradient = eye(3,3)
-    thisMaterialDomain[iIndex_MP].m33DeformationGradientIncrement = eye(3,3)
+    thisMaterialDomain[iIndex_MP].m33DeformationGradient = Matrix{Float64}(I, 3, 3)
+    thisMaterialDomain[iIndex_MP].m33DeformationGradientIncrement = Matrix{Float64}(I, 3, 3)
 end
 for iIndex_MP = 1:1:length(thisMaterialDomain)
     # if(thisMaterialDomain[iIndex_MP].v3Centroid[3] > 4.0 && thisMaterialDomain[iIndex_MP].v3Centroid[2] > 1.0)
@@ -185,7 +185,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         end
 
         thisMaterialPoint.m33DeformationGradient = thisMaterialPoint.m33DeformationGradientIncrement * thisMaterialPoint.m33DeformationGradient
-        thisMaterialPoint.m33DeformationGradientIncrement = eye(3,3)
+        thisMaterialPoint.m33DeformationGradientIncrement = Matrix{Float64}(I, 3, 3)
 
         fE = thisMaterialPoint.fElasticModulus;
         fNu = thisMaterialPoint.fPoissonRatio
@@ -197,7 +197,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         mF = thisMaterialPoint.m33DeformationGradient
         fJ = det(mF)
 
-        mP = fLame2*log(fJ)/fJ * eye(3) + fLame1/fJ*(mF*mF'-eye(3))
+        mP = fLame2*log(fJ)/fJ * Matrix{Float64}(I, 3, 3) + fLame1/fJ*(mF*mF'-Matrix{Float64}(I, 3, 3))
         thisMaterialPoint.v6Stress[1] = mP[1,1]
         thisMaterialPoint.v6Stress[2] = mP[2,2]
         thisMaterialPoint.v6Stress[3] = mP[3,3]
