@@ -12,9 +12,9 @@
 
 using Printf
 using LinearAlgebra
-import PyPlot
+# import PyPlot
 
-push!(LOAD_PATH, pwd())
+# push!(LOAD_PATH, pwd())
 
 #pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
 

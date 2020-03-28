@@ -2,9 +2,7 @@
 # cd("E:\\MyPublications\\MPM_Julia\\Codes\\SpeedTest")
 
 # simple implementation to test the processing speed of iterative for loops and vectors
-
 using Printf
-import PyPlot
 
 function myMain()
 iIterations = 1000
