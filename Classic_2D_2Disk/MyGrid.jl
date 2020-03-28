@@ -74,8 +74,8 @@ function getAdjacentGridPoints(thisMaterialPoint::moduleMaterialPoint.mpmMateria
     fLength_Cell_x = thisGrid.v2Length_CellI[1]
     fLength_Cell_y = thisGrid.v2Length_CellI[2]
 
-    iBottomLeft_i  = (floor(v2Coordinate[1] * fLength_Cell_x) + 1.)
-    iBottomLeft_j  = (floor(v2Coordinate[2] * fLength_Cell_y) + 1.)
+    iBottomLeft_i  = (floor(v2Coordinate[1] * fLength_Cell_x) + 1.0)
+    iBottomLeft_j  = (floor(v2Coordinate[2] * fLength_Cell_y) + 1.0)
 
     if(iBottomLeft_j < 1 || iBottomLeft_j > thisGrid.v2Nodes[2])
         @printf("Index out of bounds: j: %d \n", iBottomLeft_j)

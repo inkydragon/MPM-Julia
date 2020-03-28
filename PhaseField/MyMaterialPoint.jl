@@ -31,7 +31,7 @@ mutable struct mpmMaterialPoint_2D_Classic   #material point container
 
     function mpmMaterialPoint_2D_Classic()
         new(1.0, 1.0, 1.0, # Mass, initial volume, volume
-            1.0, 0.3,0.,0.,  # elastic modulus, poisson ratio, bulk, shear
+            1.0, 0.3, 0.0, 0.0,  # elastic modulus, poisson ratio, bulk, shear
             zeros(2), # centroid position
             zeros(2), # velocity
             zeros(2), # momentum
@@ -41,7 +41,7 @@ mutable struct mpmMaterialPoint_2D_Classic   #material point container
             eye(2,2), # deformation gradient increment
             zeros(3), # strain
             zeros(3), # stress
-            10.0, 0.0, 0., # local history, color, phase field
+            10.0, 0.0, 0.0, # local history, color, phase field
             0.0
         )
     end
@@ -62,9 +62,9 @@ function getStress(bulk, shear, phi, k, strain::Array{Float64})
     epsYY        = strain[2]
     epsXY        = strain[3]
 
-    v3Result[1] = degrad * ( bulk*traceEpsP + 2. * shear * (epsXX-epsYY) ) + bulk * traceEpsM
-    v3Result[2] = degrad * ( bulk*traceEpsP - 2. * shear * (epsXX-epsYY) ) + bulk * traceEpsM
-    v3Result[3] = degrad * (                  2. * shear * epsXY )
+    v3Result[1] = degrad * ( bulk*traceEpsP + 2.0 * shear * (epsXX-epsYY) ) + bulk * traceEpsM
+    v3Result[2] = degrad * ( bulk*traceEpsP - 2.0 * shear * (epsXX-epsYY) ) + bulk * traceEpsM
+    v3Result[3] = degrad * (                  2.0 * shear * epsXY )
 
     return(v3Result)
 end
@@ -102,11 +102,11 @@ end
 
 # compute Mazars equivalent strain (scalar) from the principal strains
 function getMazarsStrain(v3PStrain::Array{Float64})
-    result = 0.
+    result = 0.0
 
     for i=1:3
         xi      = v3PStrain[i]
-        result += (xi > 0.) ? xi*xi : 0
+        result += (xi > 0.0) ? xi*xi : 0
     end
 
     return sqrt(result)

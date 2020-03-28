@@ -30,13 +30,13 @@ const density  = 1.0
 const young    = 1.0
 const poisson  = 0.3
 const k        = 1.0e-10
-const shear    = young/2./(1.+poisson)
-        lambda   = young*poisson/(1.+poisson)/(1.-2.*poisson)
-const bulk     = lambda + 2.*shear/nsd
-        P        = [0.5 0.5 0.;-0.5 0.5 0.;0. 0. 1.0]
+const shear    = young/2.0/(1.0+poisson)
+        lambda   = young*poisson/(1.0+poisson)/(1.0-2.0*poisson)
+const bulk     = lambda + 2.0*shear/nsd
+        P        = [0.5 0.5 0.0;-0.5 0.5 0.0;0.0 0.0 1.0]
 
 const fTimeEnd = 1.0
-        fTime    = 0.
+        fTime    = 0.0
 
 ###############################################################
 # grid creation, this is for MPM (displacement field)
@@ -52,7 +52,7 @@ thisGrid = moduleGrid.mpmGrid(lx, ly, ex+1, ey+1)
 ###############################################################
 # array holding all material points (these are references to MaterialDomain_01 & 02)
 allMaterialPoint = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
-fOffset = lx/(ex+1.)/2
+fOffset = lx/(ex+1.0)/2
 thisMaterialDomain_02 = moduleMaterialPoint.createMaterialDomain_Rectangle([0.5; 0.5],
                                                                         lx, ly, fOffset)
 for iIndex_MP = 1:1:length(thisMaterialDomain_02)

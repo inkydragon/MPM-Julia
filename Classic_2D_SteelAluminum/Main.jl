@@ -392,7 +392,7 @@ end
 # PyPlot.hold(true)
 # PyPlot.plot(plot_Time, c="red", plot_StrainEnergy, "-", label="\$ U \$", linewidth=1.0)
 # PyPlot.plot(plot_Time, c="green", plot_KineticEnergy + plot_StrainEnergy, "-", label="\$ K+U \$", linewidth=1.0)
-# PyPlot.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=8)
+# PyPlot.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0, fontsize=8)
 # PyPlot.savefig("..\\..\\Figs\\plot_2Disk_Julia.pdf")
 end # mpmMain
 

@@ -50,9 +50,9 @@ end
 
 # compute shear and bulk modulus given Young and Poisson
 function getShearBulkMod(young, poisson, nsd)
-    shear    = young/2./(1.+poisson)
-    lambda   = young*poisson/(1.+poisson)/(1.-2.*poisson)
-    bulk     = lambda + 2.*shear/nsd
+    shear    = young/2.0/(1.0+poisson)
+    lambda   = young*poisson/(1.0+poisson)/(1.0-2.0*poisson)
+    bulk     = lambda + 2.0*shear/nsd
 
     return shear, bulk
 end
@@ -66,21 +66,21 @@ const density  = 2700.0e-12 # density of concrete [kg/m^3]
 const young    = 50.0e3     # MPa
 const poisson  = 0.25
 const k        = 1.0e-18
-const ft       = 10.         # tensile strength in MPa
+const ft       = 10.0         # tensile strength in MPa
 const Gc       = 50.0e-3     # fracture energy [N/mm]
 # length scale in phase field model [mm]
 # from 1D exact solution
-const l0       = (9/16.)^2*young*Gc/ft^2    # length scale in phase field model [mm]
-        P        = [0.5 0.5 0.;-0.5 0.5 0.;0. 0. 1.0]
+const l0       = (9/16.0)^2*young*Gc/ft^2    # length scale in phase field model [mm]
+        P        = [0.5 0.5 0.0;-0.5 0.5 0.0;0.0 0.0 1.0]
 
 shear, bulk    = getShearBulkMod(young , poisson, nsd)
 
-const smallMass= 1.e-12
+const smallMass= 1.0e-12
 
 const v0       = 0.1e3     # velocity of the impactor [mm/s]
 
 const fTimeEnd = 0.02
-        fTime    = 0.
+        fTime    = 0.0
 
         ppc      = [3,3]
 
@@ -90,7 +90,7 @@ const interval = 100       # interval for output
 ###############################################################
 # grid creation, this is for MPM (displacement field)
 ###############################################################
-rad      = 50.                  # radius of the disk [mm]
+rad      = 50.0                 # radius of the disk [mm]
 thick    = 10                   # thickness of the loading platen
 len      = 20                   # length of the loading platen
 Delta    = 3*2                  # three elements added to the left and right
@@ -111,7 +111,7 @@ allDeformMP        = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
 allRigidMP         = Array{Any,1}(0)
 allMaterialPoints  = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
 
-disk    = moduleParticleGen.createMaterialDomain_Circle([rad+0.5Delta; rad+thick], rad, thisGrid, ppc)
+disk    = moduleParticleGen.createMaterialDomain_Circle([rad+0.5*Delta; rad+thick], rad, thisGrid, ppc)
 for iIndex_MP = 1:1:length(disk)
     disk[iIndex_MP].fMass           = disk[iIndex_MP].fVolume*density
     disk[iIndex_MP].fElasticModulus = young
@@ -197,7 +197,7 @@ for iIndex in 1:1:iMaterialPoints
     array_size[iIndex, :] = [5.0]
 end
 
-pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(6., 6.), edgecolor="white", facecolor="white")
+pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(6.0, 6.0), edgecolor="white", facecolor="white")
 pyPlot01 = PyPlot.gca()
 # pyPlot01 = PyPlot.subplot2grid((1,1), (0,0), colspan=1, rowspan=1, aspect="equal")
 PyPlot.scatter(array_x, array_y, c=array_color, lw=0, s=array_size)
@@ -334,7 +334,7 @@ while fTime < fTimeEnd
     # apply boundary condiftions velocity for rigid particles-----------------
     for i=1:length(moveNodes)
         thisGridPoint = thisGrid.GridPoints[i]
-        thisGridPoint.v2Velocity[1] = 0.
+        thisGridPoint.v2Velocity[1] = 0.0
         thisGridPoint.v2Velocity[2] = allRigidMP[1].v2Velocity[2]
     end
     =#

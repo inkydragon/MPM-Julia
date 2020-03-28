@@ -95,7 +95,7 @@ function fe_matrices(
                 ni       = mesh.elements[i,iE]
                 xi       = mesh.nodes[:,ni]
                 Ni,dNi   = getNdNdx(xp, xi, mesh.deltaX, mesh.deltaY)
-                fe[i]   += 2. * Ni * H * Vp
+                fe[i]   += 2.0 * Ni * H * Vp
                 push!(real_dofs, ni)
                 for j=1:4
                 nj       = mesh.elements[j,iE]
@@ -156,8 +156,8 @@ function solve_fe(
     bcwt     = mean(diag(K))
 
     f=f-K[:,udofs]*uFix
-    K[udofs,:]=0.
-    K[:,udofs]=0.
+    K[udofs,:]=0.0
+    K[:,udofs]=0.0
     K[udofs,udofs]=bcwt*speye(length(udofs))
     f[udofs]=bcwt*speye(length(udofs))*uFix
 

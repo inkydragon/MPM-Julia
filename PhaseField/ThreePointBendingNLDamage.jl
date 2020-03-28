@@ -43,9 +43,9 @@ end
 
 # compute shear and bulk modulus given Young and Poisson
 function getShearBulkMod(young, poisson, nsd)
- shear    = young / 2. / (1. + poisson)
- lambda   = young*poisson/(1. + poisson)/(1. - 2. *poisson)
- bulk     = lambda + 2. *shear/nsd
+ shear    = young / 2.0 / (1.0 + poisson)
+ lambda   = young*poisson/(1.0 + poisson)/(1.0 - 2.0 *poisson)
+ bulk     = lambda + 2.0 *shear/nsd
 
  return shear, bulk
 end
@@ -66,12 +66,12 @@ const kappa1   = 0.01
 shear, bulk    = getShearBulkMod(young , poisson, nsd)
 shear1,bulk1   = getShearBulkMod(young1, poisson, nsd)
 
-const smallMass= 1.e-12
+const smallMass= 1.0e-12
 
 const v0       = 1.0     # velocity of the impactor [m/s]
 
 const fTimeEnd = 0.02
-        fTime    = 0.
+        fTime    = 0.0
 
         ppc      = [3,3]
 
@@ -95,7 +95,7 @@ thisGrid = moduleGrid.mpmGrid(lxn, lyn, ex+1, ey+1)
 fixGridNodes = collect(1:thisGrid.v2Nodes[1])
 
 const nonlocalRad = 2thisGrid.v2Length_Cell[1]
-const c           = 3. / (pi*nonlocalRad^2)
+const c           = 3.0 / (pi*nonlocalRad^2)
 
 # fix boundary conditions on the grid
 for iIndex in 1:thisGrid.iNodes
@@ -113,7 +113,7 @@ allDeformMP        = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
 allRigidMP         = Array{Any,1}(0)
 allMaterialPoints  = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
 
-radius  = 0.001/2.     # radius of rollers
+radius  = 0.001/2.0     # radius of rollers
 
 rollerLeft    = moduleParticleGen.createMaterialDomain_Circle([ddd+Delta; radius], radius, thisGrid, ppc)
 for iIndex_MP = 1:1:length(rollerLeft)
@@ -154,12 +154,12 @@ nc   = 1 # => 2 cells with
 
 beam = moduleParticleGen.createMaterialDomain_RectangleWithNotch(
     [
-        0.+Delta 2radius;
-        lx+Delta 2radius+0.003
+        0.0+Delta 2*radius;
+        lx +Delta 2*radius+0.003
     ],
     [
-        0.5lxn-nc*thisGrid.v2Length_Cell[1] 2radius;
-        0.5lxn+nc*thisGrid.v2Length_Cell[1] 2radius+5*thisGrid.v2Length_Cell[2]
+        0.5*lxn - nc*thisGrid.v2Length_Cell[1] 2*radius;
+        0.5*lxn + nc*thisGrid.v2Length_Cell[1] 2*radius + 5*thisGrid.v2Length_Cell[2]
     ],
     thisGrid,
     ppc
@@ -223,7 +223,7 @@ for iIndex in 1:1:iMaterialPoints
     array_size[iIndex, :] = [5.0]
 end
 
-pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(6., 6.), edgecolor="white", facecolor="white")
+pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(6.0, 6.0), edgecolor="white", facecolor="white")
 pyPlot01 = PyPlot.gca()
 # pyPlot01 = PyPlot.subplot2grid((1,1), (0,0), colspan=1, rowspan=1, aspect="equal")
 PyPlot.scatter(array_x, array_y, c=array_color, lw=0, s=array_size)
@@ -352,7 +352,7 @@ while fTime < fTimeEnd
     # apply boundary condiftions velocity for rigid particles-----------------
     for i=1:length(moveNodes)
         thisGridPoint = thisGrid.GridPoints[i]
-        thisGridPoint.v2Velocity[1] = 0.
+        thisGridPoint.v2Velocity[1] = 0.0
         thisGridPoint.v2Velocity[2] = allRigidMP[1].v2Velocity[2]
     end
     =#
@@ -410,8 +410,8 @@ while fTime < fTimeEnd
         neighbors         = moduleGrid.getNeibourParticleIDs(xp, nonlocalRad, thisGrid, allDeformMP)
 
         # determine nonlocal equivalent strain
-        neqvStrain        = 0.
-        weight            = 0.
+        neqvStrain        = 0.0
+        weight            = 0.0
 
         for ip=1:length(neighbors)
         id  = neighbors[ip]
@@ -419,7 +419,7 @@ while fTime < fTimeEnd
         xi  = mp.v2Centroid
         eqv = mp.fEqvStrain
         ri  = sqrt( (xp[1] - xi[1])^2 + (xp[2]-xi[2])^2  )
-        wi  = c*(1.-(ri/nonlocalRad)^2)^2
+        wi  = c*(1.0-(ri/nonlocalRad)^2)^2
 
         neqvStrain += wi * eqv
         weight     += wi;
@@ -428,10 +428,10 @@ while fTime < fTimeEnd
         # final nonlocal equivalent strain
         neqvStrain /= weight
 
-        D = (neqvStrain > kappa0) ?  kappa0/neqvStrain*exp((kappa0-neqvStrain)/(kappa1-kappa0)):0.
-        D = ( thisMaterialPoint.fPhase < D ) ? D : thisMaterialPoint.fPhase
+        D = (neqvStrain > kappa0) ? kappa0/neqvStrain*exp((kappa0-neqvStrain)/(kappa1-kappa0)) : 0.0
+        D = (thisMaterialPoint.fPhase < D) ? D : thisMaterialPoint.fPhase
         thisMaterialPoint.fPhase      = D
-        thisMaterialPoint.v3Stress   *= (1.-D)
+        thisMaterialPoint.v3Stress   *= (1.0-D)
     end
 
     # update position of rigid particles
