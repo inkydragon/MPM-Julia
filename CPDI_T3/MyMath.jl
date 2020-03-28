@@ -11,10 +11,10 @@ module moduleMath
       end
    end
 
-	type Vector3D   #node container
+    type Vector3D   #node container
       f1::Real
       f2::Real
-		f3::Real
+        f3::Real
 
       function Vector3D()
          new(0.0, 0.0, 0.0)

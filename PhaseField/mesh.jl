@@ -155,8 +155,8 @@ function update( mesh::Mesh, materialPoints::Array{moduleMaterialPoint.mpmMateri
 end
 
 function findAdjacentPoints(xp::Array{Float64}, mesh::Mesh )
-    iBottomLeft_i	= Int64( (floor(xp[1] / mesh.deltaX) + 1.0) )
-    iBottomLeft_j	= Int64( (floor(xp[2] / mesh.deltaY) + 1.0) )
+    iBottomLeft_i    = Int64( (floor(xp[1] / mesh.deltaX) + 1.0) )
+    iBottomLeft_j    = Int64( (floor(xp[2] / mesh.deltaY) + 1.0) )
 
     corner1         = (mesh.elemCountX+1)*(iBottomLeft_j-1) + iBottomLeft_i
     corner4         = (mesh.elemCountX+1)*(iBottomLeft_j  ) + iBottomLeft_i
@@ -164,7 +164,7 @@ function findAdjacentPoints(xp::Array{Float64}, mesh::Mesh )
 
     thisAdjacentGridPoints = [corner1, corner1+1, corner4, corner4+1]
 
-	return((thisAdjacentGridPoints))
+    return((thisAdjacentGridPoints))
 end
 
 function plot_mesh(mesh::Mesh)

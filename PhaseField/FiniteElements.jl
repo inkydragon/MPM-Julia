@@ -3,63 +3,63 @@ import FeMesh
 import moduleMaterialPoint
 
 function getN(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float64)
-		fShapeValue   = 0.0
-		v2Distance    = x - xI
-		v2ShapeValue1 = 1.0 - abs(v2Distance[1]) / dx
-		v2ShapeValue2 = 1.0 - abs(v2Distance[2]) / dy
+        fShapeValue   = 0.0
+        v2Distance    = x - xI
+        v2ShapeValue1 = 1.0 - abs(v2Distance[1]) / dx
+        v2ShapeValue2 = 1.0 - abs(v2Distance[2]) / dy
 
-		if(v2ShapeValue1 < 0.0)
-			# @printf("Negative shape value!!! %e \n", v2Distance[1])
-			v2ShapeValue1 = 0.0
-		end
-		if(v2ShapeValue2 < 0.0)
-			# @printf("Negative shape value!!! \n")
-			v2ShapeValue2 = 0.0
-		end
+        if(v2ShapeValue1 < 0.0)
+            # @printf("Negative shape value!!! %e \n", v2Distance[1])
+            v2ShapeValue1 = 0.0
+        end
+        if(v2ShapeValue2 < 0.0)
+            # @printf("Negative shape value!!! \n")
+            v2ShapeValue2 = 0.0
+        end
 
-		fShapeValue = v2ShapeValue1 * v2ShapeValue2
-		#
-		return(fShapeValue)
+        fShapeValue = v2ShapeValue1 * v2ShapeValue2
+        #
+        return(fShapeValue)
 end
 
 function getdNdx(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float64)
-		v2Result = zeros(2)
+        v2Result = zeros(2)
 
-		v2Distance   = x - xI
-		v2ShapeValue1 = 1.0 - abs(v2Distance[1]) / dx
-		v2ShapeValue2 = 1.0 - abs(v2Distance[2]) / dy
+        v2Distance   = x - xI
+        v2ShapeValue1 = 1.0 - abs(v2Distance[1]) / dx
+        v2ShapeValue2 = 1.0 - abs(v2Distance[2]) / dy
 
-		if(v2ShapeValue1 < 0.0)
-			v2ShapeValue1 = 0.0
-		end
-		if(v2ShapeValue2 < 0.0)
-			v2ShapeValue2 = 0.0
-		end
+        if(v2ShapeValue1 < 0.0)
+            v2ShapeValue1 = 0.0
+        end
+        if(v2ShapeValue2 < 0.0)
+            v2ShapeValue2 = 0.0
+        end
 
-		v2Result[1] = -v2ShapeValue2*sign(v2Distance[1]) / dx
-		v2Result[2] = -v2ShapeValue1*sign(v2Distance[2]) / dy
+        v2Result[1] = -v2ShapeValue2*sign(v2Distance[1]) / dx
+        v2Result[2] = -v2ShapeValue1*sign(v2Distance[2]) / dy
 
-		return(v2Result)
+        return(v2Result)
 end
 
 function getNdNdx(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float64)
-		v2Result = zeros(2)
+        v2Result = zeros(2)
 
-		v2Distance   = x - xI
-		v2ShapeValue1 = 1.0 - abs(v2Distance[1]) / dx
-		v2ShapeValue2 = 1.0 - abs(v2Distance[2]) / dy
+        v2Distance   = x - xI
+        v2ShapeValue1 = 1.0 - abs(v2Distance[1]) / dx
+        v2ShapeValue2 = 1.0 - abs(v2Distance[2]) / dy
 
-		if(v2ShapeValue1 < 0.0)
-			v2ShapeValue1 = 0.0
-		end
-		if(v2ShapeValue2 < 0.0)
-			v2ShapeValue2 = 0.0
-		end
+        if(v2ShapeValue1 < 0.0)
+            v2ShapeValue1 = 0.0
+        end
+        if(v2ShapeValue2 < 0.0)
+            v2ShapeValue2 = 0.0
+        end
 
-		v2Result[1] = -v2ShapeValue2*sign(v2Distance[1]) / dx
-		v2Result[2] = -v2ShapeValue1*sign(v2Distance[2]) / dy
+        v2Result[1] = -v2ShapeValue2*sign(v2Distance[1]) / dx
+        v2Result[2] = -v2ShapeValue1*sign(v2Distance[2]) / dy
 
-		return (v2ShapeValue1*v2ShapeValue2, v2Result)
+        return (v2ShapeValue1*v2ShapeValue2, v2Result)
 end
 
 function fe_matrices(mesh::FeMesh.Mesh,

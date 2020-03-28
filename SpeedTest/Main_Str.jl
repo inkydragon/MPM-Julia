@@ -6,7 +6,7 @@
 import PyPlot
 
 type testDataStructure
-	vMember::Array{Float64}
+    vMember::Array{Float64}
 
    function testDataStructure()
       new(zeros(100))
@@ -14,7 +14,7 @@ type testDataStructure
 end
 
 function myMain()
-	iIterations = 1000
+    iIterations = 1000
 	# Array----------------------------------------------------------------------
 	# ---------------------------------------------------------------------------
 	@printf("Creating arrays...")

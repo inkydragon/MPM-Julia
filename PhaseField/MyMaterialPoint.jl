@@ -2,27 +2,27 @@ module moduleMaterialPoint
 
     export mpmMaterialPoint_2D_Classic
     
-	type mpmMaterialPoint_2D_Classic   #material point container
+    type mpmMaterialPoint_2D_Classic   #material point container
       fMass           :: Float64
-	  fVolumeInitial  :: Float64
-	  fVolume         :: Float64
+      fVolumeInitial  :: Float64
+      fVolume         :: Float64
 
-	  fElasticModulus :: Float64         # Young modulus    
-	  fPoissonRatio   :: Float64         # Poisson ratio
+      fElasticModulus :: Float64         # Young modulus    
+      fPoissonRatio   :: Float64         # Poisson ratio
       fShear          :: Float64         # shear modulus
       fBulk           :: Float64         # bulk modulus
 
-	  v2Centroid      :: Array{Float64}
-	  v2Velocity      :: Array{Float64}
+      v2Centroid      :: Array{Float64}
+      v2Velocity      :: Array{Float64}
       v2Momentum      :: Array{Float64}
-	  v2ExternalForce :: Array{Float64}
-	  v2Restraint     :: Array{Float64}	# 0.0=no restraint, 1.0=fully restrained
+      v2ExternalForce :: Array{Float64}
+      v2Restraint     :: Array{Float64}    # 0.0=no restraint, 1.0=fully restrained
 
-	  m22DeformationGradient::Array{Float64}
-	  m22DeformationGradientIncrement::Array{Float64}
+      m22DeformationGradient::Array{Float64}
+      m22DeformationGradientIncrement::Array{Float64}
 
-	  v3Strain        :: Array{Float64} # xx, yy, zz, xy, yz, zx
-	  v3Stress        :: Array{Float64}
+      v3Strain        :: Array{Float64} # xx, yy, zz, xy, yz, zx
+      v3Stress        :: Array{Float64}
 
       fHistory        :: Float64   # local history field H of Miehe
       fColor          :: Float64   # color for visualisation
@@ -31,26 +31,26 @@ module moduleMaterialPoint
 
       function mpmMaterialPoint_2D_Classic()
          new(1.0, 1.0, 1.0, # Mass, initial volume, volume
-			 1.0, 0.3,0.,0.,  # elastic modulus, poisson ratio, bulk, shear
-			 zeros(2), # centroid position
-			 zeros(2), # velocity
-			 zeros(2), # momentum
-			 zeros(2), # external force
-			 zeros(2), # restraint
-			 eye(2,2), # deformation gradient
-			 eye(2,2), # deformation gradient increment
-			 zeros(3), # strain
-			 zeros(3), # stress
+             1.0, 0.3,0.,0.,  # elastic modulus, poisson ratio, bulk, shear
+             zeros(2), # centroid position
+             zeros(2), # velocity
+             zeros(2), # momentum
+             zeros(2), # external force
+             zeros(2), # restraint
+             eye(2,2), # deformation gradient
+             eye(2,2), # deformation gradient increment
+             zeros(3), # strain
+             zeros(3), # stress
              10.0, 0.0, 0., # local history, color, phase field
              0.0
-			)
+            )
       end
    end
 
     # compute stress using Amor's tension/compression split  
     # phi: phase field
     function getStress(bulk, shear, phi, k, strain::Array{Float64})
-		v3Result     = zeros(3)
+        v3Result     = zeros(3)
 
         traceEps     = strain[1] + strain[2]
         traceEpsP    = 0.5 * (traceEps + abs(traceEps))
@@ -66,20 +66,20 @@ module moduleMaterialPoint
         v3Result[2] = degrad * ( bulk*traceEpsP - 2. * shear * (epsXX-epsYY) ) + bulk * traceEpsM 
         v3Result[3] = degrad * (                  2. * shear * epsXY ) 
 
-		return(v3Result)
-	end
-	
+        return(v3Result)
+    end
+    
     function getStressIncrement_Elastic(fE::Float64, fNu::Float64, v3StrainIncrement::Array{Float64})
-		v3Result = zeros(3)
+        v3Result = zeros(3)
 
-		fConstant = fE/(1.0 + fNu)/(1.0 - 2.0*fNu)
+        fConstant = fE/(1.0 + fNu)/(1.0 - 2.0*fNu)
 
-		v3Result[1] = fConstant * ((1.0-fNu)*v3StrainIncrement[1] + fNu*v3StrainIncrement[2])
-		v3Result[2] = fConstant * ((1.0-fNu)*v3StrainIncrement[2] + fNu*v3StrainIncrement[1])
-		v3Result[3] = fConstant * ((0.5-fNu)*v3StrainIncrement[3])
+        v3Result[1] = fConstant * ((1.0-fNu)*v3StrainIncrement[1] + fNu*v3StrainIncrement[2])
+        v3Result[2] = fConstant * ((1.0-fNu)*v3StrainIncrement[2] + fNu*v3StrainIncrement[1])
+        v3Result[3] = fConstant * ((0.5-fNu)*v3StrainIncrement[3])
 
-		return(v3Result)
-	end
+        return(v3Result)
+    end
 
     # compute plane strain principal strains
     function getPrincipalStrains(v3Strain::Array{Float64})
@@ -92,7 +92,7 @@ module moduleMaterialPoint
 
       d   = ( exx - eyy ) * ( exx - eyy ) + 4.0 * exy * exy
       d   = sqrt( d )
-		
+        
       v3Result    = zeros(3)
       v3Result[1] = 0.5 * ( exx + eyy + d )
       v3Result[2] = 0.5 * ( exx + eyy - d )
