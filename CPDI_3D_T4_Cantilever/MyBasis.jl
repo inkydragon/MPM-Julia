@@ -1,4 +1,6 @@
 module moduleBasis
+include("MyGrid.jl")
+include("MyMaterialPoint.jl")
 import moduleGrid #sina, do not use include here, since you have already included the module in Main.jl
 import moduleMaterialPoint
 

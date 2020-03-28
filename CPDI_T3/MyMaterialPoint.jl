@@ -1,4 +1,5 @@
 module moduleMaterialPoint
+include("MyMath.jl")
 import moduleMath #sina, do not use include here, since you have already included the module in Main.jl
 
 mutable struct mpmMaterialPoint   #material point container

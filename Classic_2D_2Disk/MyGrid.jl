@@ -1,5 +1,6 @@
 module moduleGrid
 using Printf
+include("MyMaterialPoint.jl")
 import moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
 
 fTime = 0.0
