@@ -88,10 +88,10 @@ function loadMSH(sFile::String)
     nNodes::Int = 0
     nElements::Int = 0
     for indexLine = 1:1:length(arrayLine)
-        if(contains(arrayLine[indexLine], "\$Nodes"))
+        if(occursin("\$Nodes", arrayLine[indexLine]))
             nNodes = parse(Int, arrayLine[indexLine+1])
         end
-        if(contains(arrayLine[indexLine], "\$Elements"))
+        if(occursin("\$Elements", arrayLine[indexLine],))
             nElements = parse(Int, arrayLine[indexLine+1])
         end
     end
@@ -100,7 +100,7 @@ function loadMSH(sFile::String)
     arrayNode_ID = Array{Int}(nNodes)
     arrayNode_Coordinate = Array{Float64}(3,nNodes)
     for indexLine = 1:1:length(arrayLine)
-        if(contains(arrayLine[indexLine], "\$Nodes"))
+        if(occursin("\$Nodes", arrayLine[indexLine]))
             @printf("    Reading %d nodes\n", nNodes)
             for indexNode = 1:1:nNodes
                 arrayTemp = Array{Float64}(4)
@@ -118,7 +118,7 @@ function loadMSH(sFile::String)
     arrayElement_ID = Array{Int}(0)
     arrayElement_Corner = Array{Int}(4,0) # for 4-node tetrahedron
     for indexLine = 1:1:length(arrayLine)
-        if(contains(arrayLine[indexLine], "\$Elements"))
+        if(occursin("\$Elements", arrayLine[indexLine]))
             @printf("    Reading %d elements\n", nElements)
             for indexElement = 1:1:nElements
                 # from gmsh document -> elm-number elm-type number-of-tags < tag > ... node-number-list
