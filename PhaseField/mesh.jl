@@ -72,7 +72,7 @@ function write_to_file(mesh::Mesh)
     end
 end
 
-function vtk(mesh::Mesh,phi::Array{Float64},vtuFile::ASCIIString)
+function vtk(mesh::Mesh,phi::Array{Float64},vtuFile::String)
     results_vtu        = open(vtuFile, "w")
     numVertexesPerCell = 4
     VTKCellCode        = 9
