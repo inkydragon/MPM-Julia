@@ -107,7 +107,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
     push!(plot_Time, fTime)
     push!(plot_Displacement, allMaterialPoint[918].v3Corner[3,4] - 3.5)#2.4433-1.5)#sina, remember 39
 
-    tic();
+    time_ns();
     #reset grid------------------------------------
     for iIndex in 1:1:thisGrid.iNodes
         thisGrid.GridPoints[iIndex].fMass = 0.0
@@ -160,7 +160,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
 
     fProfiler_Particle2Grid += toq()
 
-    tic()
+    time_ns()
     # ------------------------------------------------------------------------
     # grid to material -------------------------------------------------------
     for iIndex_MP in 1:1:length(allMaterialPoint)
@@ -207,7 +207,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
     end
     fProfiler_Grid2Particle += toq()
 
-    tic()
+    time_ns()
     # calculate corner increments---------------------------------------------
     for iIndex_MP in 1:1:length(allMaterialPoint)
         thisMaterialPoint = allMaterialPoint[iIndex_MP]

@@ -171,7 +171,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         PyPlot.savefig(strFileName, bbox_inches="tight")
         PyPlot.hold(false)
     end
-    tic();
+    time_ns();
     #reset grid------------------------------------
     for iIndex in 1:1:thisGrid.iNodes
         thisGrid.GridPoints[iIndex].fMass = 0.0
@@ -221,7 +221,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
 
     fProfiler_Particle2Grid += toq()
 
-    tic()
+    time_ns()
     # ------------------------------------------------------------------------
     # grid to material pass 1-------------------------------------------------
     for iIndex_MP in 1:1:length(allMaterialPoint)

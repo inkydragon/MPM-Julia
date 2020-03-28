@@ -121,7 +121,7 @@ plot_StrainEnergy  = Array{Real}(0)
 
 # main analysis loop
 for fTime in 0.0:fTimeIncrement:fTimeEnd
-    tic();
+    time_ns();
     #reset grid---------------------------------------------------------------------
     for iIndex in 1:1:thisGrid.iNodes
         thisGrid.GridPoints[iIndex].fMass      = 0.0
@@ -169,7 +169,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
 
     fProfiler_Particle2Grid += toq()
 
-    tic()
+    time_ns();
     # ------------------------------------------------------------------------
     # grid to material -------------------------------------------------------
     for iIndex_MP in 1:1:length(allMaterialPoint)
