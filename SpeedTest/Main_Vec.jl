@@ -3,6 +3,7 @@
 
 # simple implementation to test the processing speed of iterative for loops and vectors
 
+using Printf
 import PyPlot
 
 function myMain()

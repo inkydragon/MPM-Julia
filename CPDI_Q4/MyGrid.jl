@@ -47,6 +47,7 @@ module moduleGrid
 
          N = Array{mpmGridPoint}(iN_x * iN_y)
          for i in 1:1:iN_y   #creates row major grid nodes
+using Printf
             for j in 1:1:iN_x
                x = (j-1) * fCL_x
                y = (i-1) * fCL_y

@@ -3,6 +3,7 @@
 
 # simple implementation to test the processing speed of data structures versus multi-dimensional arrays
 
+using Printf
 import PyPlot
 
 mutable struct testDataStructure

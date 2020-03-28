@@ -3,6 +3,7 @@ module FeMesh
 #
 # Vinh Phu Nguyen
 # (nvinhphu@gmail.com)
+using Printf
 import moduleMaterialPoint
 using PyPlot
 
