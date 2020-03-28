@@ -53,7 +53,7 @@ mutable struct mpmMaterialPoint   #material point container
             moduleMath.Vector3D(0.0, 0.0, 0.0))
     end
     function mpmMaterialPoint(fM::Real, fV::Real, fEM::Real, fPR::Real, v2P::moduleMath.Vector2D, v2V::moduleMath.Vector2D, v2M::moduleMath.Vector2D, v2ExternalForce::moduleMath.Vector2D, v3Strain::moduleMath.Vector3D, v3Stress::moduleMath.Vector3D)
-        new(fM, fV, fv,
+        new(fM, fV, fV,
             moduleMath.Vector2D(0.0, 0.0),
             fEM, fPR,
             moduleMath.Vector2D(v2P),
