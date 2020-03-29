@@ -109,8 +109,8 @@ end
 iMaterialPoints = length(allMaterialPoint)
 array_x         = [allMaterialPoint[i].v2Centroid[1] for i in 1:iMaterialPoints]
 array_y         = [allMaterialPoint[i].v2Centroid[2] for i in 1:iMaterialPoints]
-array_color     = Array{Real}(iMaterialPoints, 3)
-array_size      = Array{Real}(iMaterialPoints, 1)
+array_color     = Array{Float64}(iMaterialPoints, 3)
+array_size      = Array{Float64}(iMaterialPoints, 1)
 for iIndex in 1:1:iMaterialPoints
     array_color[iIndex, :] = [1.0, 0.0, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
     array_size[iIndex, :] = [5.0]

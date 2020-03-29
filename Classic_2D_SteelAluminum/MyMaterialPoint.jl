@@ -65,7 +65,7 @@ function createMaterialDomain_Circle(fCenter::Vector{Float64}, fRadius::Float64,
     return(thisMaterialDomain)
 end
 
-function createMaterialDomain_Rectangle(v2Center::Vector{Float64}, fWidth::Real, fHeight::Real, fOffset::Real)
+function createMaterialDomain_Rectangle(v2Center::Vector{Float64}, fWidth::Float64, fHeight::Float64, fOffset::Float64)
     thisMaterialDomain = Vector{mpmMaterialPoint_2D_Classic}(undef, 0)
 
     fWidth    = floor(fWidth/fOffset) * fOffset    #just in case width is not a multiple of offset
