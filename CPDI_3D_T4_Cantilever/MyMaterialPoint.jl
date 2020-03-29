@@ -11,27 +11,28 @@ mutable struct mpmMaterialPoint_Tet4   #material point container
     fElasticModulus::Float64
     fPoissonRatio::Float64
 
-    v3Centroid::Array{Float64}
-    v3CentroidIncrement::Array{Float64}
-    v3Velocity::Array{Float64}
-    v3Momentum::Array{Float64}
-    v3ExternalForce::Array{Float64}
-    v3Restraint::Array{Float64}    # 0.0=no restraint, 1.0=fully restrained
+    v3Centroid::Vector{Float64}
+    v3CentroidIncrement::Vector{Float64}
+    v3Velocity::Vector{Float64}
+    v3Momentum::Vector{Float64}
+    v3ExternalForce::Vector{Float64}
+    v3Restraint::Vector{Float64}    # 0.0=no restraint, 1.0=fully restrained
 
-    v3Corner::Array{Float64} # corner position
-    v3Corner_Increment::Array{Float64}
+    v3Corner::Array{Float64, 2} # corner position
+    v3Corner_Increment::Array{Float64, 2}
 
-    m33DeformationGradient::Array{Float64}
-    m33DeformationGradientIncrement::Array{Float64}
+    m33DeformationGradient::Array{Float64, 2}
+    m33DeformationGradientIncrement::Array{Float64, 2}
 
-    v6Strain::Array{Float64} # xx, yy, zz, xy, yz, zx
-    v6StrainIncrement::Array{Float64}
+    v6Strain::Vector{Float64} # xx, yy, zz, xy, yz, zx
+    v6StrainIncrement::Vector{Float64}
 
-    v6Stress::Array{Float64}
-    v6StressIncrement::Array{Float64}
+    v6Stress::Vector{Float64}
+    v6StressIncrement::Vector{Float64}
 
     function mpmMaterialPoint_Tet4()
-        new(1.0, 1.0, 1.0, # Mass, initial volume, volume
+        new(
+            1.0, 1.0, 1.0, # Mass, initial volume, volume
             1.0, 0.3, # elastic modulus, poisson ratio
             zeros(3), # centroid position
             zeros(3), # centroid position increment
@@ -39,15 +40,17 @@ mutable struct mpmMaterialPoint_Tet4   #material point container
             zeros(3), # momentum
             zeros(3), # external force
             zeros(3), # restraint
+
             zeros(3,4), # array of corner positions, 3d coordinates
             zeros(3,4), # array of corner position incretement
             Matrix{Float64}(I, 3, 3), # deformation gradient
             Matrix{Float64}(I, 3, 3), # deformation gradient increment
+
             zeros(6), # strain
             zeros(6), # strain increment
             zeros(6), # stress
             zeros(6) # stress increment
-            )
+        )
     end
 end
 
@@ -98,13 +101,13 @@ function loadMSH(sFile::String)
     end
 
     # create arrays to store node data
-    arrayNode_ID = Array{Int}(nNodes)
-    arrayNode_Coordinate = Array{Float64}(3,nNodes)
+    arrayNode_ID = Vector{Int}(undef, nNodes)
+    arrayNode_Coordinate = Array{Float64, 2}(undef, 3, nNodes)
     for indexLine = 1:1:length(arrayLine)
         if(occursin("\$Nodes", arrayLine[indexLine]))
             @printf("    Reading %d nodes\n", nNodes)
             for indexNode = 1:1:nNodes
-                arrayTemp = Array{Float64}(4)
+                arrayTemp = Vector{Float64}(undef, 4)
                 arrayTemp = readdlm(IOBuffer(arrayLine[indexLine + 1 + indexNode])) # convert multi number string into array of numbers
 
                 arrayNode_ID[indexNode] = arrayTemp[1]
@@ -112,32 +115,44 @@ function loadMSH(sFile::String)
 
                 # @printf("    Node_ID %d: Coordinates (%f,%f,%f)\n", arrayNode_ID[indexNode], arrayNode_Coordinate[indexNode,1], arrayNode_Coordinate[indexNode,2], arrayNode_Coordinate[indexNode,3])
             end
+            @printf("    Reading nodes end\n")
+            break
         end
     end
 
     # create arrays to store element data
-    arrayElement_ID = Array{Int}(0)
-    arrayElement_Corner = Array{Int}(4,0) # for 4-node tetrahedron
+    arrayElement_ID = Vector{Int}(undef, 0)
+    arrayElement_Corner = Array{Int, 2}(undef, 4,0) # for 4-node tetrahedron
     for indexLine = 1:1:length(arrayLine)
         if(occursin("\$Elements", arrayLine[indexLine]))
             @printf("    Reading %d elements\n", nElements)
             for indexElement = 1:1:nElements
                 # from gmsh document -> elm-number elm-type number-of-tags < tag > ... node-number-list
-                arrayTemp = readdlm(IOBuffer(arrayLine[indexLine + 1 + indexElement])) # convert multi number string into array of numbers
+                arrayTemp = readdlm(IOBuffer(arrayLine[indexLine + 1 + indexElement]), Int64) # convert multi number string into array of numbers
 
                 if(arrayTemp[2] != 4) # element type = 4-node tetrahedron
                     nElements -= 1
                 end
+
+                # id:  1  2 3 4 5 6   7   8   9
+                # ex: 124 4 2 1 1 238 132 195 102
                 if(arrayTemp[2] == 4) # element type = 4-node tetrahedron
                     # arrayElement_ID[indexElement] = arrayTemp[1,1]
                     arrayElement_ID = vcat(arrayElement_ID, arrayTemp[1])
 
                     nTags = arrayTemp[3]
-                    newCorners = [arrayTemp[3+nTags+1]; arrayTemp[3+nTags+2]; arrayTemp[3+nTags+3]; arrayTemp[3+nTags+4]]
+                    newCorners = [
+                        arrayTemp[3+nTags+1];
+                        arrayTemp[3+nTags+2];
+                        arrayTemp[3+nTags+3];
+                        arrayTemp[3+nTags+4]
+                    ]
 
                     arrayElement_Corner = hcat(arrayElement_Corner, newCorners)
                 end
             end
+            @printf("    Reading elements end\n")
+            break
         end
     end
     # for indexElement = 1:1:nElements
@@ -147,7 +162,7 @@ function loadMSH(sFile::String)
     @printf("    nNodes: %d, nElements: %d\n", nNodes, nElements)
 
     # create material points from node and element data
-    thisMaterialDomain = Array{mpmMaterialPoint_Tet4}(nElements)
+    thisMaterialDomain = Vector{mpmMaterialPoint_Tet4}(undef, nElements)
     @printf("    Creating %d material points...", nElements)
 
     for indexElement = 1:1:nElements
@@ -181,8 +196,8 @@ function loadMSH(sFile::String)
     return(thisMaterialDomain)
 end
 
-# function createMaterialDomain_Circle(fCenter_x::Real, fCenter_y::Real, fRadius::Real, fOffset::Real)
-#     thisMaterialDomain = Array{mpmMaterialPoint}(0)
+# function createMaterialDomain_Circle(fCenter_x::Float64, fCenter_y::Float64, fRadius::Float64, fOffset::Float64)
+#     thisMaterialDomain = Vector{mpmMaterialPoint}(0)
 #
 #     fRadius = floor(fRadius/fOffset) * fOffset    #just in case radius is not a multiple of offset
 #

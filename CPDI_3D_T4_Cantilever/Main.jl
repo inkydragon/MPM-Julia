@@ -10,17 +10,17 @@ import PyPlot
 
 pyFig_RealTime = PyPlot.figure("MPM 3D", figsize=(18/2.54, 18/2.54), edgecolor="white", facecolor="white")
 
-include("./MyMaterialPoint.jl")
-include("./MyGrid.jl")
-include("./MyBasis.jl")
+include("MyMaterialPoint.jl")
+include("MyGrid.jl")
+include("MyBasis.jl")
 
 function mpmMain()
-const fGravity = 10.0
+fGravity = 10.0
 # grid creation
 thisGrid = moduleGrid.mpmGrid(8.0, 2.0, 8.0, 17, 3, 17)
 
 # array holding all material points (these are references to MaterialDomain_01 & 02)
-allMaterialPoint = Array{moduleMaterialPoint.mpmMaterialPoint_Tet4}(0)
+allMaterialPoint = Vector{moduleMaterialPoint.mpmMaterialPoint_Tet4}(undef, 0)
 
 thisMaterialDomain = moduleMaterialPoint.loadMSH("beam.msh")
 for iIndex_MP = 1:1:length(thisMaterialDomain)
@@ -67,7 +67,7 @@ end
 @printf("    Element count: %d \n", length(allMaterialPoint))
 @printf("    Mass: %+.6e \n", fMass)
 
-# @printf("Total number of material points: %d \n", length(allMaterialPoint))
+@printf("Total number of material points: %d \n", length(allMaterialPoint))
 
 # ---------------------------------------------------------------------------
 # timers
@@ -77,7 +77,7 @@ fTimeIncrement = 1.0e-3
 fTimeEnd = 3.0e-0
 
 # realtime graphics timer
-fPlotTimeInterval = 10.6#*fTimeEnd#1000.0*fTimeIncrement
+fPlotTimeInterval = 0.6#*fTimeEnd#1000.0*fTimeIncrement
 fPlotTime = fPlotTimeInterval
 
 # final results plot timer
@@ -98,10 +98,10 @@ fProfiler_Corners = 0.0
 # ---------------------------------------------------------------------------
 # final results plot holder arrays
 fMarkedParicle_y = thisMaterialDomain[39].v3Centroid[3]
-plot_Time = Array{Real}(0)
-plot_Displacement = Array{Real}(0)
-plot_KineticEnergy = Array{Real}(0)
-plot_StrainEnergy = Array{Real}(0)
+plot_Time = Vector{Float64}(undef, 0)
+plot_Displacement = Vector{Float64}(undef, 0)
+plot_KineticEnergy = Vector{Float64}(undef, 0)
+plot_StrainEnergy = Vector{Float64}(undef, 0)
 
 # main analysis loop
 for fTime in 0.0:fTimeIncrement:fTimeEnd
@@ -255,9 +255,9 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         fConsolTime = 0.0
 
         fProfiler_Total = fProfiler_Particle2Grid + fProfiler_Grid2Particle + fProfiler_Corners
-        @printf("fTime: %+.3e |", fTime)
+        @printf("fTime: %+.3e step |", fTime)
         @printf("Displacement: %+.3e ", thisMaterialDomain[39].v3Centroid[3] - fMarkedParicle_y)
-        @printf("(Profiler) Total: %+.3e ", fProfiler_Total)
+        @printf("(Profiler) Total: %+.3e s", fProfiler_Total)
         # @printf("P2G: %+.3e (%+.2f) ", fProfiler_Particle2Grid, fProfiler_Particle2Grid/fProfiler_Total)
         # @printf("G2P: %+.3e (%+.2f) \n", fProfiler_Grid2Particle, fProfiler_Grid2Particle/fProfiler_Total)
         # @printf("Cor: %+.3e (%+.2f) \n", fProfiler_Corners, fProfiler_Corners/fProfiler_Total)
@@ -273,11 +273,11 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         # array_x = [thisGrid.GridPoints[i].v3Position[1] for i in 1:thisGrid.iNodes]
         # array_y = [thisGrid.GridPoints[i].v3Position[2] for i in 1:thisGrid.iNodes]
         # array_z = [thisGrid.GridPoints[i].v3Position[3] for i in 1:thisGrid.iNodes]
-        array_x = Array{Float64}(0)
-        array_y = Array{Float64}(0)
-        array_z = Array{Float64}(0)
-        array_color = Array{Float64}(0,3)
-        array_size = Array{Float64}(0)
+        array_x = Vector{Float64}(undef, 0)
+        array_y = Vector{Float64}(undef, 0)
+        array_z = Vector{Float64}(undef, 0)
+        array_color = Array{Float64, 2}(undef, 0,3)
+        array_size = Vector{Float64}(undef, 0)
         for iIndex in 1:1:thisGrid.iNodes
             # array_color[iIndex, :] = [0.0, 0.5, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
             # if(iIndex == 89 || iIndex == 90 || iIndex == 110 || iIndex == 111)
@@ -292,41 +292,42 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             end
             # println(array_color)
         end
-
+        PyPlot.using3D()
+        PyPlot.clf()
         pyPlot01 = PyPlot.gca(projection="3d")
         # pyPlot01 = PyPlot.subplot2grid((5,5), (0,0), colspan=4, rowspan=5, projection="3d")
         scat = PyPlot.scatter3D(array_x, array_y, array_z, lw=0, c=array_color, s=array_size)
-        PyPlot.hold(true)
-        # pyPlot01[:set_dist](1000.0)
-        pyPlot01[:w_xaxis][:line][:set_color]((1.0, 1.0, 1.0, 0.0))
-        pyPlot01[:w_yaxis][:line][:set_color]((1.0, 1.0, 1.0, 0.0))
-        pyPlot01[:w_zaxis][:line][:set_color]((1.0, 1.0, 1.0, 0.0))
-        pyPlot01[:w_xaxis][:gridlines][:set_color]([1.0, 0.0, 0.0, 1.0])
-        pyPlot01[:w_yaxis][:gridlines][:set_color]((1.0, 0.0, 0.0, 1.0))
-        pyPlot01[:w_zaxis][:gridlines][:set_color]((1.0, 0.0, 0.0, 1.0))
-        # pyPlot01[:w_xaxis][:gridlines][:set_lw](10.0)
-        pyPlot01[:set_xlim](0.0, 5.0)
-        pyPlot01[:set_ylim](-3.0, 5.0)
-        pyPlot01[:set_zlim](1.5, 6.5)
-        # pyPlot01[:set_xlabel]("X")
-        # pyPlot01[:set_ylabel]("Y")
-        # pyPlot01[:set_zlabel]("Z")
-        pyPlot01[:grid](b=true, which="major", color=[1.0; 0.0; 0.0], linestyle="--", linewidth=10.5)
-        # pyPlot01[:set_axis_off]()
-        # pyPlot01[:set_xticks](collect(0.0:thisGrid.v3Length_Cell[1]:thisGrid.v3Length_Grid[1]))# empty to have no major ticks and grids
-        # pyPlot01[:set_yticks](collect(0.0:thisGrid.v3Length_Cell[2]:thisGrid.v3Length_Grid[2]))# empty to have no major ticks and grids
-        # pyPlot01[:set_zticks](collect(0.0:thisGrid.v3Length_Cell[3]:thisGrid.v3Length_Grid[3]))# empty to have no major ticks and grids
-        pyPlot01[:set_xticks]([])# empty to have no major ticks and grids
-        pyPlot01[:set_yticks]([])# empty to have no major ticks and grids
-        pyPlot01[:set_zticks]([])# empty to have no major ticks and grids
-        pyPlot01[:set_xticklabels]([])# empty to have no major ticks and grids
-        pyPlot01[:set_yticklabels]([])# empty to have no major ticks and grids
-        pyPlot01[:set_zticklabels]([])# empty to have no major ticks and grids
-        # pyPlot01[:tick_params](axis='x',length=0)
-        # pyPlot01[:set_view](distance=1000.0)
-        # pyPlot01[:view_init](elev=30.0, azim=-60.0)
-        pyPlot01[:view_init](30,-60.0)
-        # pyPlot01[:view_init](10.0, -70.0)
+
+        # pyPlot01.set_dist(1000.0)
+        pyPlot01.w_xaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+        pyPlot01.w_yaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+        pyPlot01.w_zaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+        pyPlot01.w_xaxis.gridlines.set_color([1.0, 0.0, 0.0, 1.0])
+        pyPlot01.w_yaxis.gridlines.set_color((1.0, 0.0, 0.0, 1.0))
+        pyPlot01.w_zaxis.gridlines.set_color((1.0, 0.0, 0.0, 1.0))
+        # pyPlot01.w_xaxis.gridlines.set_lw(10.0)
+        pyPlot01.set_xlim(0.0, 5.0)
+        pyPlot01.set_ylim(-3.0, 5.0)
+        pyPlot01.set_zlim(1.5, 6.5)
+        # pyPlot01.set_xlabel("X")
+        # pyPlot01.set_ylabel("Y")
+        # pyPlot01.set_zlabel("Z")
+        pyPlot01.grid(b=true, which="major", color=[1.0; 0.0; 0.0], linestyle="--", linewidth=10.5)
+        # pyPlot01.set_axis_off()
+        # pyPlot01.set_xticks(collect(0.0:thisGrid.v3Length_Cell[1]:thisGrid.v3Length_Grid[1]))# empty to have no major ticks and grids
+        # pyPlot01.set_yticks(collect(0.0:thisGrid.v3Length_Cell[2]:thisGrid.v3Length_Grid[2]))# empty to have no major ticks and grids
+        # pyPlot01.set_zticks(collect(0.0:thisGrid.v3Length_Cell[3]:thisGrid.v3Length_Grid[3]))# empty to have no major ticks and grids
+        pyPlot01.set_xticks([])# empty to have no major ticks and grids
+        pyPlot01.set_yticks([])# empty to have no major ticks and grids
+        pyPlot01.set_zticks([])# empty to have no major ticks and grids
+        pyPlot01.set_xticklabels([])# empty to have no major ticks and grids
+        pyPlot01.set_yticklabels([])# empty to have no major ticks and grids
+        pyPlot01.set_zticklabels([])# empty to have no major ticks and grids
+        # pyPlot01.tick_params(axis='x',length=0)
+        # pyPlot01.set_view(distance=1000.0)
+        # pyPlot01.view_init(elev=30.0, azim=-60.0)
+        pyPlot01.view_init(30,-60.0)
+        # pyPlot01.view_init(10.0, -70.0)
 
         # plot all material points (3d tet4)
         # @printf("Plotting...")
@@ -341,8 +342,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
 
             nCorners = size(allMaterialPoint[iIndex_MP].v3Corner, 2)
             # println("Corner: ", thisMaterialDomain[iIndex_MP].v3Corner[1,:])
-            # thisMarker = Array{Real}(nCorners+4,3) # the marker is draw over 7 lines
-            thisMarker_x = zeros(nCorners+4)#Array{Real}(nCorners+4,3) # the marker is draw over 7 lines
+            # thisMarker = Array{Float64,2}(undef, nCorners+4,3) # the marker is draw over 7 lines
+            thisMarker_x = zeros(nCorners+4)#Array{Float64,2}(undef, nCorners+4,3) # the marker is draw over 7 lines
             thisMarker_y = zeros(nCorners+4)
             thisMarker_z = zeros(nCorners+4)
 
@@ -360,9 +361,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         end
         # marked corner
         # PyPlot.scatter3D([allMaterialPoint[918].v3Corner[1,4]], [allMaterialPoint[918].v3Corner[2,4]], [allMaterialPoint[918].v3Corner[3,4]], c=[0.0, 1.0, 0.0], lw = 0, s=40, marker="o")
-        PyPlot.hold(false)
 
-        strFileName = ".\\Figs\\Cantelever_$(Int(fTime*1000)).png"
+        strFileName = "./_img/Cantelever_$(Int(fTime*1000)).png"
         # PyPlot.tight_layout(pad=0)
         PyPlot.savefig(strFileName, bbox_inches="tight")
 
@@ -374,29 +374,26 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         #
         # PyPlot.pause(0.01)
         # PyPlot.draw()
-        # PyPlot.hold(false)
     end
 end
 
 # final plots
-# pyFig_FinalResults = PyPlot.figure("Time-Displacement", figsize=(8.0/2.54, 6/2.54))
-# PyPlot.clf()
-# pyPlot01 = PyPlot.gca()
-# PyPlot.subplots_adjust(left=0.2, bottom=0.15, right=0.9)
-# pyPlot01[:grid](b=true, which="both", color="gray", linestyle="-", linewidth=0.5)
-# pyPlot01[:set_axisbelow](true)
-# pyPlot01[:set_xlim](0.0, 3.0)
-# pyPlot01[:set_ylim](-3.5, 0.0)
-# pyPlot01[:set_xlabel]("time (s)", fontsize=8)
-# pyPlot01[:set_ylabel]("displacement (m)", fontsize=8)
-# pyPlot01[:set_xticks](collect(0.0:0.5:3.0))
-# pyPlot01[:tick_params](axis="both", which="major", labelsize=8)
-# pyPlot01[:set_yticks](collect(0.0:-0.5:-3.5))
-#
-# PyPlot.hold(true)
-# PyPlot.plot(plot_Time, plot_Displacement, "-", linewidth=1.0)
-#
-# PyPlot.savefig("..\\..\\Figs\\plot_Cantilever_Julia.pdf")
+pyFig_FinalResults = PyPlot.figure("Time-Displacement", figsize=(8.0/2.54, 6/2.54))
+PyPlot.clf()
+pyPlot01 = PyPlot.gca()
+PyPlot.subplots_adjust(left=0.2, bottom=0.15, right=0.9)
+pyPlot01.grid(b=true, which="both", color="gray", linestyle="-", linewidth=0.5)
+pyPlot01.set_axisbelow(true)
+pyPlot01.set_xlim(0.0, 3.0)
+pyPlot01.set_ylim(-3.5, 0.0)
+pyPlot01.set_xlabel("time (s)", fontsize=8)
+pyPlot01.set_ylabel("displacement (m)", fontsize=8)
+pyPlot01.set_xticks(collect(0.0:0.5:3.0))
+pyPlot01.tick_params(axis="both", which="major", labelsize=8)
+pyPlot01.set_yticks(collect(0.0:-0.5:-3.5))
+
+PyPlot.plot(plot_Time, plot_Displacement, "-", linewidth=1.0)
+PyPlot.savefig("./_img/plot_Cantilever_Julia.pdf")
 end # mpmMain
 
 mpmMain()

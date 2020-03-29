@@ -1,9 +1,9 @@
 module moduleGrid
-using Printf
-include("MyMaterialPoint.jl")
-import moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
 
-fTime = 0.0
+using Printf
+import ..moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
+
+# fTime = 0.0
 
 function index3DTo1D(i::Int, j::Int, k::Int, nColumns::Int, nRows::Int, nLayers::Int)
     index = nColumns*nRows*(k-1) + nColumns*(j-1) + i
@@ -16,28 +16,30 @@ function index3DTo1D(i::Int, j::Int, k::Int, nColumns::Int, nRows::Int, nLayers:
 end
 
 mutable struct mpmGridPoint
-    v3Fixed::Array{Bool}
-    fMass::Real
-    v3Position::Array{Float64}
-    v3Momentum::Array{Float64}
-    v3Force::Array{Float64}
+    v3Fixed::Vector{Bool}
+    fMass::Float64
+    v3Position::Vector{Float64}
+    v3Momentum::Vector{Float64}
+    v3Force::Vector{Float64}
 
     function mpmGridPoint()
-        new([false; false; false],
+        new(
+            [false; false; false],
             0.0,
             zeros(3),
             zeros(3),
-            zeros(3))
+            zeros(3)
+        )
     end
 end
 
 mutable struct mpmGrid   #grid container
-    v3Length_Grid::Array{Float64}
-    v3Nodes::Array{Int}
+    v3Length_Grid::Vector{Float64}
+    v3Nodes::Vector{Int}
     iNodes::Int
-    v3Length_Cell::Array{Float64}
+    v3Length_Cell::Vector{Float64}
 
-    GridPoints::Array{mpmGridPoint}
+    GridPoints::Vector{mpmGridPoint}
 
     function mpmGrid(fGL_x, fGL_y, fGL_z, iN_x, iN_y, iN_z)
 
@@ -46,7 +48,7 @@ mutable struct mpmGrid   #grid container
         v3CL[2] = fGL_y / (iN_y - 1)
         v3CL[3] = fGL_z / (iN_z - 1)
 
-        thisGridPoint = Array{mpmGridPoint}(iN_x * iN_y * iN_z)
+        thisGridPoint = Vector{mpmGridPoint}(undef, iN_x * iN_y * iN_z)
         for k=1:1:iN_z
             for j=1:1:iN_y
             for i=1:1:iN_x
@@ -89,8 +91,8 @@ function isAdjacentGridPoint(thisMaterialPoint::moduleMaterialPoint.mpmMaterialP
     end
 end
 
-function getAdjacentGridPoints(v3Coordinate::Array{Float64}, thisGrid::mpmGrid)
-    thisAdjacentGridPoints = Array{Int}(0)
+function getAdjacentGridPoints(v3Coordinate::Vector{Float64}, thisGrid::mpmGrid)
+    thisAdjacentGridPoints = Vector{Int}(undef, 0)
 
     v3Length_Cell = thisGrid.v3Length_Cell
 
@@ -114,7 +116,7 @@ end
 function getAdjacentGridPoints_CPDI(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint_Tet4, thisGrid::mpmGrid)
     #sina, be careful, this does not work if the material point is on the grid edge
     #sina, this is not optimum for the CPDI method
-    thisAdjacentGridPoints = Array{Int}(0)
+    thisAdjacentGridPoints = Vector{Int}(undef, 0)
 
     for indexCorner = 1:1:size(thisMaterialPoint.v3Corner,2)
         thisIndex = getAdjacentGridPoints(thisMaterialPoint.v3Corner[:,indexCorner], thisGrid)

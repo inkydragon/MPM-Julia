@@ -1,8 +1,7 @@
 module moduleBasis
-include("MyGrid.jl")
-include("MyMaterialPoint.jl")
-import moduleGrid #sina, do not use include here, since you have already included the module in Main.jl
-import moduleMaterialPoint
+
+import ..moduleGrid #sina, do not use include here, since you have already included the module in Main.jl
+import ..moduleMaterialPoint
 
 # -------------------------------------------------------------
 # Classic functions--------------------------------------------
@@ -31,7 +30,7 @@ function getShapeValue_Classic(v3Distance::Array{Float64,1}, v3CellLength::Array
     return(fShapeValue)
 end
 
-function getShapeGradient_Classic_x(fDistance_x::Real, fDistance_y::Real, fCell_Length_x::Real, fCell_Length_y::Real)
+function getShapeGradient_Classic_x(fDistance_x::Float64, fDistance_y::Float64, fCell_Length_x::Float64, fCell_Length_y::Float64)
     fShapeValue_y = 1.0 - abs(fDistance_y) / fCell_Length_y
     if(fShapeValue_y < 0.0)
         fShapeValue_y = 0.0
@@ -42,7 +41,7 @@ function getShapeGradient_Classic_x(fDistance_x::Real, fDistance_y::Real, fCell_
     return(fShapeGradient_x)
 end
 
-function getShapeGradient_Classic_y(fDistance_x::Real, fDistance_y::Real, fCell_Length_x::Real, fCell_Length_y::Real)
+function getShapeGradient_Classic_y(fDistance_x::Float64, fDistance_y::Float64, fCell_Length_x::Float64, fCell_Length_y::Float64)
     fShapeValue_x = 1.0 - abs(fDistance_x) / fCell_Length_x
     if(fShapeValue_x < 0.0)
         fShapeValue_x = 0.0
