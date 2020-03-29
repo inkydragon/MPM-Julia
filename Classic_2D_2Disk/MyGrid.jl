@@ -1,10 +1,9 @@
 module moduleGrid
 
 using Printf
-include("MyMaterialPoint.jl")
-import .moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
+import moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
 
-fTime = 0.0
+# fTime = 0.0
 
 function index2DTo1D(i::Int64, j::Int64, nColumns::Int64, nRows::Int64)
     index = nColumns*(j-1) + i
@@ -17,29 +16,31 @@ function index2DTo1D(i::Int64, j::Int64, nColumns::Int64, nRows::Int64)
 end
 
 mutable struct mpmGridPoint
-    v2Fixed         :: Array{Bool}
+    v2Fixed         :: Vector{Bool}
     fMass           :: Float64
-    v2Position      :: Array{Float64}
-    v2Momentum      :: Array{Float64}
-    v2Force         :: Array{Float64}
+    v2Position      :: Vector{Float64}
+    v2Momentum      :: Vector{Float64}
+    v2Force         :: Vector{Float64}
 
     function mpmGridPoint()
-        new([false; false],
+        new(
+            [false; false],
             0.0,
             zeros(2),
             zeros(2),
-            zeros(2))
+            zeros(2)
+        )
     end
 end
 
 #grid container
 mutable struct mpmGrid
-    v2Length_Grid        :: Array{Float64}       # length in x and y dirs
-    v2Nodes              :: Array{Int64}
-    iNodes               :: Int64                # number of grid nodes
-    v2Length_Cell        :: Array{Float64}       # size of each cell/element
-    v2Length_CellI       :: Array{Float64}       # inverse of size of each cell/element
-    GridPoints           :: Array{mpmGridPoint}  # array of all grid points
+    v2Length_Grid        :: Vector{Float64}       # length in x and y dirs
+    v2Nodes              :: Vector{Int64}
+    iNodes               :: Int64                 # number of grid nodes
+    v2Length_Cell        :: Vector{Float64}       # size of each cell/element
+    v2Length_CellI       :: Vector{Float64}       # inverse of size of each cell/element
+    GridPoints           :: Vector{mpmGridPoint}  # array of all grid points
 
     # constructor, GL_x is length of the grid in x dir
     # iN_x: number of nodes in x dir
@@ -52,7 +53,7 @@ mutable struct mpmGrid
         v2CLI[1]  = 1.0 / v2CL[1]
         v2CLI[2]  = 1.0 / v2CL[2]
 
-        thisGridPoint = Array{mpmGridPoint}(iN_x * iN_y)
+        thisGridPoint = Array{mpmGridPoint}(undef, iN_x * iN_y)
         for j=1:iN_y
         for i=1:iN_x
             x = (i-1) * v2CL[1]

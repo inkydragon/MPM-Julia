@@ -10,22 +10,23 @@ mutable struct mpmMaterialPoint_2D_Classic
     fElasticModulus  :: Float64
     fPoissonRatio    :: Float64
 
-    v2Centroid       :: Array{Float64}  # position
-    v2Velocity       :: Array{Float64}
-    v2Momentum       :: Array{Float64}
-    v2ExternalForce  :: Array{Float64}
-    v2Restraint      :: Array{Float64}    # 0.0=no restraint, 1.0=fully restrained
+    v2Centroid       :: Vector{Float64}  # position
+    v2Velocity       :: Vector{Float64}
+    v2Momentum       :: Vector{Float64}
+    v2ExternalForce  :: Vector{Float64}
+    v2Restraint      :: Vector{Float64}    # 0.0=no restraint, 1.0=fully restrained
 
-    v2Corner         :: Array{Float64} # corner position
+    v2Corner         :: Array{Float64,2} # corner position
 
-    m22DeformationGradient          :: Array{Float64}
-    m22DeformationGradientIncrement :: Array{Float64}
+    m22DeformationGradient          :: Array{Float64,2}
+    m22DeformationGradientIncrement :: Array{Float64,2}
 
-    v3Strain         :: Array{Float64} # xx, yy, zz, xy, yz, zx
-    v3Stress         :: Array{Float64}
+    v3Strain         :: Vector{Float64} # xx, yy, zz, xy, yz, zx
+    v3Stress         :: Vector{Float64}
 
     function mpmMaterialPoint_2D_Classic()
-        new(1.0, 1.0, 1.0, # Mass, initial volume, volume
+        new(
+            1.0, 1.0, 1.0, # Mass, initial volume, volume
             1.0, 0.3, # elastic modulus, poisson ratio
             zeros(2), # centroid position
             zeros(2), # velocity
@@ -37,12 +38,12 @@ mutable struct mpmMaterialPoint_2D_Classic
             Matrix{Float64}(I, 2, 2), # deformation gradient increment
             zeros(3), # strain
             zeros(3), # stress
-            )
+        )
     end
 end
 
 function createMaterialDomain_Circle(fCenter::Array{Float64}, fRadius::Float64, fOffset::Float64)
-    thisMaterialDomain = Array{mpmMaterialPoint_2D_Classic}(0)
+    thisMaterialDomain = Array{mpmMaterialPoint_2D_Classic}(undef, 0)
 
     fRadius = floor(fRadius/fOffset) * fOffset    #just in case radius is not a multiple of offset
 

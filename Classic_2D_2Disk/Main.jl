@@ -9,10 +9,14 @@ using LinearAlgebra
 import PyPlot
 
 # pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
-
+push!(LOAD_PATH, @__DIR__)
+@show LOAD_PATH
 include("MyMaterialPoint.jl")
+# using MyMaterialPoint
 include("MyGrid.jl")
+# using moduleGrid
 include("MyBasis.jl")
+# using moduleBasis
 
 function mpmMain()
 # problem parameters
@@ -25,7 +29,7 @@ poissonRatio  = 0.3
 thisGrid = moduleGrid.mpmGrid(1.0, 1.0, 21, 21)
 
 # array holding all material points (these are references to MaterialDomain_01 & 02)
-allMaterialPoint = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+allMaterialPoint = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 
 fOffset = 0.2/8.0 # there are 8 material points over the radius (16 MPs)
 # how to calculate fOffset:
@@ -116,10 +120,10 @@ fProfiler_Grid2Particle = 0.0
 # ---------------------------------------------------------------------------
 # final results plot holder arrays
 fMarkedParicle_y   = thisMaterialDomain_01[1].v2Centroid[2]
-plot_Time          = Array{Real}(0) #??? Float64??
-plot_Displacement  = Array{Real}(0)
-plot_KineticEnergy = Array{Real}(0)
-plot_StrainEnergy  = Array{Real}(0)
+plot_Time          = Vector{Float64}(undef, 0) #??? Float64??
+# plot_Displacement  = Vector{Float64}(undef, 0) # not use
+plot_KineticEnergy = Vector{Float64}(undef, 0)
+plot_StrainEnergy  = Vector{Float64}(undef, 0)
 
 # main analysis loop
 for fTime in 0.0:fTimeIncrement:fTimeEnd
@@ -280,8 +284,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         iMaterialPoints = length(allMaterialPoint)
         array_x         = [allMaterialPoint[i].v2Centroid[1] for i in 1:iMaterialPoints]
         array_y         = [allMaterialPoint[i].v2Centroid[2] for i in 1:iMaterialPoints]
-        array_color     = Array{Real}(iMaterialPoints, 3)
-        array_size      = Array{Real}(iMaterialPoints, 1)
+        array_color     = Array{Float64}(undef,iMaterialPoints, 3)
+        array_size      = Array{Float64}(undef,iMaterialPoints, 1)
         for iIndex in 1:1:iMaterialPoints
             array_color[iIndex, :] = [1.0, 0.0, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
             array_size[iIndex, :] = [5.0]
