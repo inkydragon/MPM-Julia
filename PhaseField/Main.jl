@@ -13,7 +13,7 @@ using Printf
 using LinearAlgebra
 import PyPlot
 
-push!(LOAD_PATH, pwd())
+# push!(LOAD_PATH, pwd())
 
 #pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
 
@@ -22,6 +22,8 @@ include("MyGrid.jl")
 include("mesh.jl")
 include("FiniteElements.jl")
 include("MyBasis.jl")
+using .moduleGrid
+using .moduleBasis
 
 function mpmMain()
 
@@ -52,7 +54,7 @@ thisGrid = moduleGrid.mpmGrid(lx, ly, ex+1, ey+1)
 # material points, generation
 ###############################################################
 # array holding all material points (these are references to MaterialDomain_01 & 02)
-allMaterialPoint = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+allMaterialPoint = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 fOffset = lx/(ex+1.0)/2
 thisMaterialDomain_02 = moduleMaterialPoint.createMaterialDomain_Rectangle([0.5; 0.5],
                                                                         lx, ly, fOffset)
@@ -246,7 +248,7 @@ while fTime < fTimeEnd
 
         fTime += fTimeIncrement
     end
-end # end of
+end # end of while fTime < fTimeEnd
 end # end of mpmMain()
 
 mpmMain()

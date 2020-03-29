@@ -3,7 +3,9 @@ module moduleParticleGen
 using ..moduleGrid
 using ..moduleMaterialPoint
 
-#export createMaterialDomain_Rectangle, createMaterialDomain_Circle
+export createMaterialDomain_Circle,
+    createMaterialDomain_Rectangle,
+    createMaterialDomain_RectangleWithNotch
 
 function createMaterialDomain_Circle(
     fCenter::Vector{Float64},
