@@ -8,7 +8,7 @@ using Printf
 using LinearAlgebra
 import PyPlot
 
-pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
+# pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
 
 include("MyMaterialPoint.jl")
 include("MyGrid.jl")
@@ -16,10 +16,10 @@ include("MyBasis.jl")
 
 function mpmMain()
 # problem parameters
-const fGravity      = 0.0
-const density       = 1000.0
-const youngModulus  = 1000.0
-const poissonRatio  = 0.3
+fGravity      = 0.0
+density       = 1000.0
+youngModulus  = 1000.0
+poissonRatio  = 0.3
 
 # grid creation, Lx, Ly, # nodes x, # nodes y
 thisGrid = moduleGrid.mpmGrid(1.0, 1.0, 21, 21)
@@ -310,7 +310,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         # PyPlot.show()
         # PyPlot.hold(true)
 
-        strFileName = ".\\Figs\\2Disk_$(Int(fTime*1000)).png"
+        strFileName = "./img/2Disk_$(Int(fTime*1000)).png"
         PyPlot.savefig(strFileName, bbox_inches="tight")
         # PyPlot.hold(false)
     end
@@ -335,7 +335,7 @@ PyPlot.hold(true)
 PyPlot.plot(plot_Time, c="red", plot_StrainEnergy, "-", label="\$ U \$", linewidth=1.0)
 PyPlot.plot(plot_Time, c="green", plot_KineticEnergy + plot_StrainEnergy, "-", label="\$ K+U \$", linewidth=1.0)
 PyPlot.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0, fontsize=8)
-PyPlot.savefig("..\\..\\Figs\\plot_2Disk_Julia.pdf")
+PyPlot.savefig("./img/plot_2Disk_Julia.pdf")
 end # mpmMain
 
 mpmMain()
