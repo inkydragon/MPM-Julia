@@ -1,4 +1,5 @@
 module moduleMaterialPoint
+
 using LinearAlgebra
 # material point container
 mutable struct mpmMaterialPoint_2D_Classic
@@ -57,4 +58,5 @@ function createMaterialDomain_Circle(fCenter::Array{Float64}, fRadius::Float64, 
 
     return(thisMaterialDomain)
 end
+
 end # module moduleMaterialPoint

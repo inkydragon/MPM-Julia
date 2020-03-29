@@ -1,9 +1,10 @@
 module moduleBasis
+
 using Printf
 include("MyGrid.jl")
 include("MyMaterialPoint.jl")
-import moduleGrid #sina, do not use include here, since you have already included the module in Main.jl
-import moduleMaterialPoint
+import .moduleGrid #sina, do not use include here, since you have already included the module in Main.jl
+import .moduleMaterialPoint
 
 # -------------------------------------------------------------
 # Classic functions--------------------------------------------
@@ -76,4 +77,5 @@ function getShapeAndGradient_Classic(thisMaterialPoint::moduleMaterialPoint.mpmM
 
     return(v2ShapeValue[1]*v2ShapeValue[2],v2Result)
 end
+
 end # module moduleBasis

@@ -10,9 +10,9 @@ import PyPlot
 
 pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
 
-include("./MyMaterialPoint.jl")
-include("./MyGrid.jl")
-include("./MyBasis.jl")
+include("MyMaterialPoint.jl")
+include("MyGrid.jl")
+include("MyBasis.jl")
 
 function mpmMain()
 # problem parameters
@@ -248,6 +248,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         push!(plot_KineticEnergy, fKineticEnergy)
         push!(plot_StrainEnergy, fStrainEnergy)
     end
+
     # ------------------------------------------------------------------------
     # consol output
     # ------------------------------------------------------------------------
@@ -313,7 +314,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         PyPlot.savefig(strFileName, bbox_inches="tight")
         # PyPlot.hold(false)
     end
-end
+end # main analysis loop
 
 # final plots
 pyFig_RealTime = PyPlot.figure("MPM 2Disk FinalPlot", figsize=(8/2.54, 4/2.54))
