@@ -9,18 +9,21 @@ import PyPlot
 
 pyFig_RealTime = PyPlot.figure("MPM Disk impact", figsize=(16/2.54, 16/2.54), edgecolor="white", facecolor="white")
 
-include("./MyMaterialPoint.jl")
-include("./MyGrid.jl")
-include("./MyBasis.jl")
+include("MyMaterialPoint.jl")
+using .moduleMaterialPoint
+include("MyGrid.jl")
+using .moduleGrid
+include("MyBasis.jl")
+using .moduleBasis
 
 function mpmMain()
-const fGravity = 0.0
+fGravity = 0.0
 # grid creation
 # nodes where fixation boundary conditions are hard coded in the following code!!!
 thisGrid = moduleGrid.mpmGrid(60.0, 60.0, 51, 51)
 
 # array holding all material points (these are references to MaterialDomain_01 & 02)
-allMaterialPoint = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+allMaterialPoint = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 
 fOffset = 60.0/50/2.0
 thisMaterialDomain_01 = moduleMaterialPoint.createMaterialDomain_Circle([30.0; 50.0], 9.6/2.0, fOffset)
@@ -108,10 +111,10 @@ fProfiler_Grid2Particle = 0.0
 # ---------------------------------------------------------------------------
 # final results plot holder arrays
 fMarkedParicle_y = thisMaterialDomain_01[1].v2Centroid[2]
-plot_Time = Array{Real}(0)
-plot_Displacement = Array{Real}(0)
-plot_KineticEnergy = Array{Real}(0)
-plot_StrainEnergy = Array{Real}(0)
+plot_Time = Vector{Float64}(undef, 0)
+plot_Displacement = Vector{Float64}(undef, 0)
+plot_KineticEnergy = Vector{Float64}(undef, 0)
+plot_StrainEnergy = Vector{Float64}(undef, 0)
 
 # main analysis loop
 for fTime in 0.0:fTimeIncrement:fTimeEnd
@@ -127,8 +130,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         iMaterialPoints = length(allMaterialPoint)
         array_x = [allMaterialPoint[i].v2Centroid[1] for i in 1:iMaterialPoints]
         array_y = [allMaterialPoint[i].v2Centroid[2] for i in 1:iMaterialPoints]
-        array_color = Array{Real}(iMaterialPoints, 3)
-        array_size = Array{Real}(iMaterialPoints, 1)
+        array_color = Array{Float64}(undef, iMaterialPoints, 3)
+        array_size = Array{Float64}(undef, iMaterialPoints, 1)
         for iIndex in 1:1:iMaterialPoints
             thisColor = allMaterialPoint[iIndex].fAlpha
             thisColor /= (allMaterialPoint[iIndex].fYieldStress/allMaterialPoint[iIndex].fElasticModulus)*500
@@ -145,33 +148,33 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             end
             array_size[iIndex, :] = [4.0]
         end
-
+        PyPlot.clf()
         pyPlot01 = PyPlot.gca()
         # pyPlot01 = PyPlot.subplot2grid((1,1), (0,0), colspan=1, rowspan=1, aspect="equal")
         PyPlot.scatter(array_x, array_y, c=array_color, lw=0, s=array_size)
-        pyPlot01[:spines]["top"][:set_color]("gray")
-        pyPlot01[:spines]["right"][:set_color]("gray")
-        pyPlot01[:spines]["bottom"][:set_color]("gray")
-        pyPlot01[:spines]["left"][:set_color]("gray")
+        pyPlot01.spines["top"].set_color("gray")
+        pyPlot01.spines["right"].set_color("gray")
+        pyPlot01.spines["bottom"].set_color("gray")
+        pyPlot01.spines["left"].set_color("gray")
         # pyPlot01[:axhline](linewidth=4, color="g")
         # pyPlot01[:axvline](linewidth=4, color="g")
-        pyPlot01[:set_xlim](0.0, 60.0)
-        pyPlot01[:set_ylim](0.0, 60.0)
+        pyPlot01.set_xlim(0.0, 60.0)
+        pyPlot01.set_ylim(0.0, 60.0)
         # pyPlot01[:set_xlabel]("")
         # pyPlot01[:set_ylabel]("")
-        pyPlot01[:grid](b=true, which="both", color="white", linestyle="-", linewidth=0.2)
-        pyPlot01[:set_axisbelow](true)
-        pyPlot01[:set_xticks]([])# empty to have no major ticks and grids
-        pyPlot01[:set_xticks](collect(0.0:1.2:60.0),minor=true)
-        pyPlot01[:set_yticks]([])# empty to have no major ticks and grids
-        pyPlot01[:set_yticks](collect(0.0:1.2:60.0),minor=true)
+        pyPlot01.grid(b=true, which="both", color="white", linestyle="-", linewidth=0.2)
+        pyPlot01.set_axisbelow(true)
+        pyPlot01.set_xticks([])# empty to have no major ticks and grids
+        pyPlot01.set_xticks(collect(0.0:1.2:60.0),minor=true)
+        pyPlot01.set_yticks([])# empty to have no major ticks and grids
+        pyPlot01.set_yticks(collect(0.0:1.2:60.0),minor=true)
 
         # PyPlot.show()
         # PyPlot.hold(true)
 
-        strFileName = ".\\Figs\\DiskImpact_$(iTimeCycle).png"
+        strFileName = "./_img/DiskImpact_$(iTimeCycle).png"
         PyPlot.savefig(strFileName, bbox_inches="tight")
-        PyPlot.hold(false)
+        # PyPlot.hold(false)
     end
 
     fProfiler_Particle2Grid += @elapsed begin

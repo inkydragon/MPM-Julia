@@ -1,9 +1,9 @@
 module moduleGrid
-using Printf
-include("MyMaterialPoint.jl")
-import moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
 
-fTime = 0.0
+using Printf
+import ..moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
+
+# fTime = 0.0
 
 function index2DTo1D(i::Int64, j::Int64, nColumns::Int64, nRows::Int64)
     index = nColumns*(j-1) + i
@@ -16,30 +16,32 @@ function index2DTo1D(i::Int64, j::Int64, nColumns::Int64, nRows::Int64)
 end
 
 mutable struct mpmGridPoint
-    v2Fixed::Array{Bool}
+    v2Fixed::Vector{Bool}
     fMass::Float64
-    v2Position::Array{Float64}
-    v2Velocity::Array{Float64}
-    v2Momentum::Array{Float64}
-    v2Force::Array{Float64}
+    v2Position::Vector{Float64}
+    v2Velocity::Vector{Float64}
+    v2Momentum::Vector{Float64}
+    v2Force::Vector{Float64}
 
     function mpmGridPoint()
-        new([false; false],
+        new(
+            [false; false],
             0.0,
             zeros(2),
             zeros(2),
             zeros(2),
-            zeros(2))
+            zeros(2)
+        )
     end
 end
 
 mutable struct mpmGrid   #grid container
-    v2Length_Grid::Array{Float64}
-    v2Nodes::Array{Int64}
+    v2Length_Grid::Vector{Float64}
+    v2Nodes::Vector{Int64}
     iNodes::Int64
-    v2Length_Cell::Array{Float64}
+    v2Length_Cell::Vector{Float64}
 
-    GridPoints::Array{mpmGridPoint}
+    GridPoints::Vector{mpmGridPoint}
 
     function mpmGrid(fGL_x, fGL_y, iN_x, iN_y)
 
@@ -47,11 +49,11 @@ mutable struct mpmGrid   #grid container
         v2CL[1] = fGL_x / Float64(iN_x - 1.0)
         v2CL[2] = fGL_y / Float64(iN_y - 1.0)
 
-        thisGridPoint = Array{mpmGridPoint}(iN_x * iN_y)
+        thisGridPoint = Vector{mpmGridPoint}(undef, iN_x * iN_y)
         for j=1:1:iN_y
-        for i=1:1:iN_x
-            x = (i-1) * v2CL[1]
-            y = (j-1) * v2CL[2]
+            for i=1:1:iN_x
+                x = (i-1) * v2CL[1]
+                y = (j-1) * v2CL[2]
                 index = index2DTo1D(i, j, iN_x, iN_y)
 
                 bFixed_x = false
@@ -78,7 +80,7 @@ mutable struct mpmGrid   #grid container
 end
 
 function getAdjacentGridPoints(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint_2D_Classic, thisGrid::mpmGrid)
-    thisAdjacentGridPoints = Array{Int64}(0)
+    thisAdjacentGridPoints = Vector{Int64}(undef, 0)
 
     v2Coordinate = thisMaterialPoint.v2Centroid
 
