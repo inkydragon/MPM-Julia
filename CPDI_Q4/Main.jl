@@ -7,18 +7,23 @@ import PyPlot
 
 pyFig_RealTime = PyPlot.figure("MPM Two-Disk Impact", figsize=(8, 8))
 
-include("./MyMath.jl")
-include("./MyMaterialPoint.jl")
-include("./MyGrid.jl")
-include("./MyBasis.jl")
+include("MyMath.jl")
+using .moduleMath
+include("MyMaterialPoint.jl")
+using .moduleMaterialPoint
+include("MyGrid.jl")
+using .moduleGrid
+include("MyBasis.jl")
+using .moduleBasis
 
 function mpmMain()
-const fGravity = 1000.0
+fGravity = 1000.0
+
 # grid creation
 thisGrid = moduleGrid.mpmGrid(4.0, 10.0, 9, 21)
 
 # array holding all material points (these are references to MaterialDomain_01 & 02)
-thisMaterialPoint = Array{moduleMaterialPoint.mpmMaterialPoint}(0)
+thisMaterialPoint = Vector{moduleMaterialPoint.mpmMaterialPoint}(undef, 0)
 
 fOffset = 1.0/6.0
 thisMaterialDomain_03 = moduleMaterialPoint.createMaterialDomain_Rectangle(2.0, 9.0, 1.0, 1.0, fOffset)
@@ -78,10 +83,10 @@ fConsolTimeInterval = 100.0*fTimeIncrement
 fConsolTime = fConsolTimeInterval
 
 # final results plot holder arrays
-plot_Time = Array{Real}(0)
-plot_Displacement = Array{Real}(0)
-plot_KineticEnergy = Array{Real}(0)
-plot_StrainEnergy = Array{Real}(0)
+plot_Time = Vector{Float64}(undef, 0)
+plot_Displacement = Vector{Float64}(undef, 0)
+plot_KineticEnergy = Vector{Float64}(undef, 0)
+plot_StrainEnergy = Vector{Float64}(undef, 0)
 
 # main analysis loop
 for fTime in 0.0:fTimeIncrement:fTimeEnd
@@ -93,6 +98,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         thisGrid.GridPoints[iIndex].v2Force.fx = 0.0
         thisGrid.GridPoints[iIndex].v2Force.fy = 0.0
     end
+
     # material to grid (mass, momentum, force)------------------------------
     # println("material to grid")
     for iIndex_MP in 1:1:iMaterialPoints
@@ -118,6 +124,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             thisGrid.GridPoints[iIndex_GP].v2Force.fy += fShapeValue*thisMaterialPoint[iIndex_MP].v2ExternalForce.fy
         end
     end
+
     # apply boundary conditions to grid points
     # println("boundary conditions")
     for iIndex_GP in 1:1:thisGrid.iNodes
@@ -131,7 +138,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             thisGridPoint.v2Force.fy = 0.0
         end
     end
-        # update grid momentum------------------------------------
+
+    # update grid momentum------------------------------------
     # println("update grid momenta")
     for iIndex in 1:1:thisGrid.iNodes
         thisGridPoint = thisGrid.GridPoints[iIndex]
@@ -139,7 +147,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         thisGrid.GridPoints[iIndex].v2Momentum.fx += thisGrid.GridPoints[iIndex].v2Force.fx * fTimeIncrement
         thisGrid.GridPoints[iIndex].v2Momentum.fy += thisGrid.GridPoints[iIndex].v2Force.fy * fTimeIncrement
     end
-        # grid to material (position increments and velocity updates)------------------------------
+
+    # grid to material (position increments and velocity updates)------------------------------
     # material point positions are not updated here, since they are still to be used
     # position increments are calculated to eventually be added to the positions at the final step of the loop
     # println("grid to material")
@@ -166,12 +175,14 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             thisMaterialPoint[iIndex_MP].v2PositionIncrement.fy += fShapeValue*thisGridPointVelocity_y * fTimeIncrement
         end
     end
-    #reset grid momenta, to be used for re-mapping the material point to grid momenta (velocities)------------------------------------
+
+    # reset grid momenta, to be used for re-mapping the material point to grid momenta (velocities)------------------------------------
     # println("reset grid momenta")
     for iIndex in 1:1:thisGrid.iNodes
         thisGrid.GridPoints[iIndex].v2Momentum.fx = 0.0
         thisGrid.GridPoints[iIndex].v2Momentum.fy = 0.0
     end
+
     # map particle momenta back to grid------------------------------
     # mass in NOT mapped here
     # println("remapping to grid")
@@ -188,6 +199,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             thisGrid.GridPoints[iIndex_GP].v2Momentum.fy += fShapeValue * thisMaterialPoint[iIndex_MP].fMass * thisMaterialPoint[iIndex_MP].v2Velocity.fy
         end
     end
+
     # apply boundary conditions to grid points
     # println("boundary conditions2")
     for iIndex_GP in 1:1:thisGrid.iNodes
@@ -203,7 +215,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             thisGridPoint.v2Force.fy = 0.0
         end
     end
-    #strain calculations------------------------------
+
+    # strain calculations------------------------------
     # println("strain calculations")
     for iIndex_MP in 1:1:iMaterialPoints
         # thisAdjacentGridPoints = moduleGrid.getAdjacentGridPoints(thisMaterialPoint[iIndex_MP], thisGrid)
@@ -230,6 +243,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             thisMaterialPoint[iIndex_MP].mDeformationGradientIncrement[2,1] += fShapeGradient_x * thisGridPointVelocity_y * fTimeIncrement
         end
     end
+
     # calculate corner increments-------------------------------------------------
     # println("corner increments")
     for iIndex_MP in 1:1:iMaterialPoints
@@ -255,10 +269,11 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
 
                 thisMaterialPoint[iIndex_MP].mCorner_Increment[iIndex_Corner, 1] += fShapeValue * thisGridPointVelocity_x * fTimeIncrement
                 thisMaterialPoint[iIndex_MP].mCorner_Increment[iIndex_Corner, 2] += fShapeValue * thisGridPointVelocity_y * fTimeIncrement
-    # println("mCorner_Increment: ", thisMaterialPoint[iIndex_MP].mCorner_Increment[iIndex_Corner, :])
+                # println("mCorner_Increment: ", thisMaterialPoint[iIndex_MP].mCorner_Increment[iIndex_Corner, :])
             end
         end
     end
+
     # update particle corners, strains, deformation gradient, volume-------------------
     # println("update particles")
     for iIndex_MP in 1:1:iMaterialPoints
@@ -280,6 +295,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
 
         thisMaterialPoint[iIndex_MP].fVolume = det(thisMaterialPoint[iIndex_MP].mDeformationGradient) * thisMaterialPoint[iIndex_MP].fVolumeInitial
     end
+
     #stress calculations------------------------------------------------------
     # println("stress calculations")
     for iIndex_MP in 1:1:iMaterialPoints
@@ -298,6 +314,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         thisMaterialPoint[iIndex_MP].v3Stress.f2 = mP[2,2]
         thisMaterialPoint[iIndex_MP].v3Stress.f3 = mP[1,2]
     end
+
     # update particle positions, momenta----------------
     # println("update particles2")
     fStrainEnergy = 0.0
@@ -357,8 +374,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
 
         array_x = [thisGrid.GridPoints[i].v2Position.fx for i in 1:thisGrid.iNodes]
         array_y = [thisGrid.GridPoints[i].v2Position.fy for i in 1:thisGrid.iNodes]
-        array_color = Array{Real}(thisGrid.iNodes, 3)
-        array_size = Array{Real}(thisGrid.iNodes, 1)
+        array_color = Array{Float64, 2}(undef, thisGrid.iNodes, 3)
+        array_size = Array{Float64, 2}(undef, thisGrid.iNodes, 1)
         for iIndex in 1:1:thisGrid.iNodes
             array_color[iIndex, :] = [0.0, 0.5, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
             # if(iIndex == 89 || iIndex == 90 || iIndex == 110 || iIndex == 111)
@@ -372,9 +389,9 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             end
         end
 
+        PyPlot.clf()
         pyPlot01 = PyPlot.subplot2grid((5,5), (0,0), colspan=2, rowspan=5)
         PyPlot.scatter(array_x, array_y, c=array_color, lw=0, s=array_size)
-        PyPlot.hold(true)
 
         fStrainEnergy = 0.0
         for iIndex_MP in 1:1:iMaterialPoints
@@ -387,14 +404,14 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
                 fStrainEnergy = 1.0
             end
 
-            thisColor = [fStrainEnergy, 0.0, 0.0]
+            thisColor = [fStrainEnergy 0.0 0.0]
             if(iIndex_MP == 3)
-                thisColor = [0.0, 1.0, 0.0]
+                thisColor = [0.0 1.0 0.0]
             end
 
             thisSize = 5 + fStrainEnergy * 10.0
 
-            thisRectangle = Array{Real}(5,2)
+            thisRectangle = Array{Float64, 2}(undef, 5,2)
 
             # mRadial1_Deformed = thisMaterialPoint[iIndex_MP].mDeformationGradient * thisMaterialPoint[iIndex_MP].mRadial1
             # mRadial2_Deformed = thisMaterialPoint[iIndex_MP].mDeformationGradient * thisMaterialPoint[iIndex_MP].mRadial2
@@ -420,33 +437,55 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             thisRectangle[4,:] = thisMaterialPoint[iIndex_MP].mCorner[4,:]
             thisRectangle[5,:] = thisMaterialPoint[iIndex_MP].mCorner[1,:]
 
-            PyPlot.plot(thisRectangle[:,1], thisRectangle[:,2], c=[1.0, 0.0, 0.0])
-            PyPlot.scatter([thisMaterialPoint[iIndex_MP].v2Position.fx], [thisMaterialPoint[iIndex_MP].v2Position.fy], c=thisColor, lw = 0, s=thisSize, marker="o")
+            _color_len = size(thisRectangle, 1)
+            PyPlot.plot(
+                thisRectangle[:,1],
+                thisRectangle[:,2], 
+                c=[1.0, 0.0, 0.0]
+            )
+            _color_len = length(thisMaterialPoint[iIndex_MP].v2Position.fx)
+            PyPlot.scatter(
+                [thisMaterialPoint[iIndex_MP].v2Position.fx],
+                [thisMaterialPoint[iIndex_MP].v2Position.fy],
+                c=repeat(thisColor, _color_len),
+                lw = 0,
+                s=thisSize,
+                marker="o"
+            )
         end
-        PyPlot.hold(false)
+        # PyPlot.hold(false)
+        strFileName = "./_img/CPDI_Q4_$(Int(fTime*1000)).png"
+        PyPlot.savefig(strFileName, bbox_inches="tight")
 
+
+        PyPlot.clf()
         pyPlot02 = PyPlot.subplot2grid((5,5), (0,3), colspan=2, rowspan=2)
         PyPlot.plot(plot_Time, plot_Displacement, "-")
         # PyPlot.plot(plot_Time, plot_KineticEnergy, "-")
-        # PyPlot.hold(true)
         # PyPlot.plot(plot_Time, plot_StrainEnergy, "-")
         # PyPlot.plot(plot_Time, plot_KineticEnergy + plot_StrainEnergy, "-")
-        PyPlot.grid("on")
+        PyPlot.grid(true)
 
-        PyPlot.pause(0.01)
-        PyPlot.draw()
-        PyPlot.hold(false)
+        # PyPlot.pause(0.01)
+        # PyPlot.draw()
+        # strFileName = "./_img/CPDI_Q4-plot_Displacement_$(Int(fTime*1000)).png"
+        # PyPlot.savefig(strFileName, bbox_inches="tight")
     end
 end
 
 # final plots
 pyFig_FinalResults = PyPlot.figure("Time-Displacement", figsize=(6, 6))
+PyPlot.clf()
+pyPlot01 = PyPlot.gca()
+pyPlot01.grid(b=true, which="both", color="gray", linestyle="-", linewidth=0.5)
+pyPlot01.set_axisbelow(true)
 PyPlot.plot(plot_Time, plot_Displacement, "-")
+PyPlot.savefig("./_img/plot_Displacement.pdf")
+PyPlot.clf()
 
-# PyPlot.plot(plot_Time, plot_KineticEnergy, "-")
-# PyPlot.hold(true)
-# PyPlot.plot(plot_Time, plot_StrainEnergy, "-")
 # PyPlot.plot(plot_Time, plot_KineticEnergy + plot_StrainEnergy, "-")
+PyPlot.plot(plot_Time, plot_KineticEnergy, "-")
+PyPlot.savefig("./_img/plot_KineticEnergy.pdf")
 end # mpmMain
 
 mpmMain()

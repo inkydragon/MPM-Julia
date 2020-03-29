@@ -1,17 +1,16 @@
 module moduleMaterialPoint
 
 using LinearAlgebra
-include("MyMath.jl")
-import moduleMath #sina, do not use include here, since you have already included the module in Main.jl
+import ..moduleMath #sina, do not use include here, since you have already included the module in Main.jl
 
 mutable struct mpmMaterialPoint   #material point container
-    fMass::Real
-    fVolumeInitial::Real
-    fVolume::Real
+    fMass::Float64
+    fVolumeInitial::Float64
+    fVolume::Float64
     v2Length::moduleMath.Vector2D
 
-    fElasticModulus::Real
-    fPoissonRatio::Real
+    fElasticModulus::Float64
+    fPoissonRatio::Float64
 
     v2Position::moduleMath.Vector2D
     v2PositionIncrement::moduleMath.Vector2D
@@ -20,14 +19,14 @@ mutable struct mpmMaterialPoint   #material point container
     v2ExternalForce::moduleMath.Vector2D
     v2Restraint::moduleMath.Vector2D	# 0.0=no restraint, 1.0=fully restrained
 
-    mCorner::Array{Real}
-    mCorner_Increment::Array{Real}
+    mCorner::Array{Float64,2}
+    mCorner_Increment::Array{Float64,2}
 
-    mRadial1::Array{Real}
-    mRadial2::Array{Real}
+    mRadial1::Vector{Float64}
+    mRadial2::Vector{Float64}
 
-    mDeformationGradient::Array{Real}
-    mDeformationGradientIncrement::Array{Real}
+    mDeformationGradient::Array{Float64, 2}
+    mDeformationGradientIncrement::Array{Float64, 2}
 
     v3Strain::moduleMath.Vector3D
     v3Stress::moduleMath.Vector3D
@@ -55,7 +54,7 @@ mutable struct mpmMaterialPoint   #material point container
             moduleMath.Vector3D(0.0, 0.0, 0.0),
             moduleMath.Vector3D(0.0, 0.0, 0.0))
     end
-    function mpmMaterialPoint(fM::Real, fV::Real, fEM::Real, fPR::Real, v2P::moduleMath.Vector2D, v2V::moduleMath.Vector2D, v2M::moduleMath.Vector2D, v2ExternalForce::moduleMath.Vector2D, v3Strain::moduleMath.Vector3D, v3Stress::moduleMath.Vector3D)
+    function mpmMaterialPoint(fM::Float64, fV::Float64, fEM::Float64, fPR::Float64, v2P::moduleMath.Vector2D, v2V::moduleMath.Vector2D, v2M::moduleMath.Vector2D, v2ExternalForce::moduleMath.Vector2D, v3Strain::moduleMath.Vector3D, v3Stress::moduleMath.Vector3D)
         new(fM, fV, fV,
             moduleMath.Vector2D(0.0, 0.0),
             fEM, fPR,
@@ -78,8 +77,8 @@ mutable struct mpmMaterialPoint   #material point container
     end
 end
 
-function createMaterialDomain_Rectangle(fCenter_x::Real, fCenter_y::Real, fWidth::Real, fHeight::Real, fOffset::Real)
-    thisMaterialDomain = Array{mpmMaterialPoint}(0)
+function createMaterialDomain_Rectangle(fCenter_x::Float64, fCenter_y::Float64, fWidth::Float64, fHeight::Float64, fOffset::Float64)
+    thisMaterialDomain = Vector{mpmMaterialPoint}(undef, 0)
 
     fWidth	= floor(fWidth/fOffset) * fOffset	#just in case width is not a multiple of offset
     fHeight	= floor(fHeight/fOffset) * fOffset	#just in case height is not a multiple of offset
@@ -96,8 +95,8 @@ function createMaterialDomain_Rectangle(fCenter_x::Real, fCenter_y::Real, fWidth
     return(thisMaterialDomain)
 end
 
-function createMaterialDomain_Circle(fCenter_x::Real, fCenter_y::Real, fRadius::Real, fOffset::Real)
-    thisMaterialDomain = Array{mpmMaterialPoint}(0)
+function createMaterialDomain_Circle(fCenter_x::Float64, fCenter_y::Float64, fRadius::Float64, fOffset::Float64)
+    thisMaterialDomain = Array{mpmMaterialPoint}(undef, 0)
 
     fRadius = floor(fRadius/fOffset) * fOffset	#just in case radius is not a multiple of offset
 

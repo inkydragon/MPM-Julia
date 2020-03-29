@@ -1,11 +1,10 @@
 module moduleGrid
-using Printf
-include("MyMath.jl")
-include("MyMaterialPoint.jl")
-import moduleMath #sina, do not use include here, since you have already included the module in Main.jl
-import moduleMaterialPoint
 
-fTime = 0.0
+using Printf
+import ..moduleMath #sina, do not use include here, since you have already included the module in Main.jl
+import ..moduleMaterialPoint
+
+# fTime = 0.0
 
 function indexDoubleToSingle(i::Int, j::Int, nRows::Int, nColumns::Int)
     index = nColumns*(i-1) + j
@@ -20,7 +19,7 @@ end
 mutable struct mpmGridPoint
     bFixed_x::Bool
     bFixed_y::Bool
-    fMass::Real
+    fMass::Float64
     v2Position::moduleMath.Vector2D
     v2Momentum::moduleMath.Vector2D
     v2Force::moduleMath.Vector2D
@@ -28,33 +27,33 @@ mutable struct mpmGridPoint
     function mpmGridPoint()
         new(false, false, 0.0, moduleMath.Vector2D(0.0, 0.0), moduleMath.Vector2D(0.0, 0.0), moduleMath.Vector2D(0.0, 0.0))
     end
-    function mpmGridPoint(bF_x::Bool, bF_y::Bool, fM::Real, v2P::moduleMath.Vector2D, v2M::moduleMath.Vector2D, v2F::moduleMath.Vector2D)
-        new(bF_x, bF_y, fM, moduleMath.Vector2D(v2P), moduleMath.Vector2D(v2M), moduleMath.Vector2D(v2F))
+    function mpmGridPoint(bF_x::Bool, bF_y::Bool, fM::Float64, v2P::moduleMath.Vector2D, v2M::moduleMath.Vector2D, v2F::moduleMath.Vector2D)
+        new(bF_x, bF_y, fM, v2P, v2M, v2F)
     end
 end
 
 mutable struct mpmGrid   #grid container
-    fLength_Grid_x::Real
-    fLength_Grid_y::Real
+    fLength_Grid_x::Float64
+    fLength_Grid_y::Float64
     iNodes_x::Int
     iNodes_y::Int
     iNodes::Int
-    fLength_Cell_x::Real
-    fLength_Cell_y::Real
+    fLength_Cell_x::Float64
+    fLength_Cell_y::Float64
 
-    GridPoints::Array{mpmGridPoint}
+    GridPoints::Vector{mpmGridPoint}
 
     function mpmGrid(fGL_x, fGL_y, iN_x, iN_y)
         fCL_x = fGL_x / (iN_x - 1)
         fCL_y = fGL_y / (iN_y - 1)
 
-        N = Array{mpmGridPoint}(iN_x * iN_y)
+        N = Vector{mpmGridPoint}(undef, iN_x * iN_y)
         for i in 1:1:iN_y   #creates row major grid nodes
             for j in 1:1:iN_x
                 x = (j-1) * fCL_x
                 y = (i-1) * fCL_y
                 index = indexDoubleToSingle(i, j, iN_y, iN_x)
-            # index = iN_x*(i-1) + j
+                # index = iN_x*(i-1) + j
 
                 bFixed_x = false
                 bFixed_y = false
@@ -93,7 +92,7 @@ end
 # function getAdjacentGridPoints(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint, thisGrid::mpmGrid)
 # 	#sina, be careful, this does not work if the material point is on the grid edge
 # 	#sina, this is not optimum for the CPDI method
-# 	thisAdjacentGridPoints = Array{Int}(0)
+# 	thisAdjacentGridPoints = Vector{Int}(undef, 0)
 #
 # 	fParticle_Length_x = thisMaterialPoint.v2Length.fx * thisMaterialPoint.mDeformationGradient[1,1]
 # 	fParticle_Length_y = thisMaterialPoint.v2Length.fy * thisMaterialPoint.mDeformationGradient[2,2]
@@ -115,8 +114,8 @@ end
 # 	return(thisAdjacentGridPoints)
 # end
 
-function getAdjacentGridPoints(v2Coordinate::moduleMath.Vector2D, thisGrid::mpmGrid, fTime::Real)
-    thisAdjacentGridPoints = Array{Int}(0)
+function getAdjacentGridPoints(v2Coordinate::moduleMath.Vector2D, thisGrid::mpmGrid, fTime::Float64)
+    thisAdjacentGridPoints = Vector{Int}(undef, 0)
 
     fLength_Cell_x = thisGrid.fLength_Cell_x
     fLength_Cell_y = thisGrid.fLength_Cell_y
@@ -134,10 +133,10 @@ function getAdjacentGridPoints(v2Coordinate::moduleMath.Vector2D, thisGrid::mpmG
     return(unique(thisAdjacentGridPoints))
 end
 
-function getAdjacentGridPoints_GIMP(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint, thisGrid::mpmGrid, fTime::Real)
+function getAdjacentGridPoints_GIMP(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint, thisGrid::mpmGrid, fTime::Float64)
     #sina, be careful, this does not work if the material point is on the grid edge
     #sina, this is not optimum for the CPDI method
-    thisAdjacentGridPoints = Array{Int}(0)
+    thisAdjacentGridPoints = Vector{Int}(undef, 0)
 
     fP_x = thisMaterialPoint.v2Position.fx
     fP_y = thisMaterialPoint.v2Position.fy
@@ -178,10 +177,10 @@ function getAdjacentGridPoints_GIMP(thisMaterialPoint::moduleMaterialPoint.mpmMa
     return(unique(thisAdjacentGridPoints))
 end
 
-function getAdjacentGridPoints_CPDI(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint, thisGrid::mpmGrid, fTime::Real)
+function getAdjacentGridPoints_CPDI(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint, thisGrid::mpmGrid, fTime::Float64)
     #sina, be careful, this does not work if the material point is on the grid edge
     #sina, this is not optimum for the CPDI method
-    thisAdjacentGridPoints = Array{Int}(0)
+    thisAdjacentGridPoints = Vector{Int}(undef, 0)
 
     fP_x = thisMaterialPoint.v2Position.fx
     fP_y = thisMaterialPoint.v2Position.fy

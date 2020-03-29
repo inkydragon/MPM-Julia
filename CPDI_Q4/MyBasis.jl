@@ -1,10 +1,8 @@
 module moduleBasis
-include("MyMath.jl")
-include("MyGrid.jl")
-include("MyMaterialPoint.jl")
-import moduleMath #sina, do not use include here, since you have already included the module in Main.jl
-import moduleGrid
-import moduleMaterialPoint
+
+import ..moduleMath #sina, do not use include here, since you have already included the module in Main.jl
+import ..moduleGrid
+import ..moduleMaterialPoint
 
 # -------------------------------------------------------------
 # Template functions-------------------------------------------
@@ -26,9 +24,10 @@ function getShapeGradient_y(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPo
     fShapeGradient_y = getShapeGradient_CPDI_Q4_y(thisMaterialPoint, thisGridPoint, thisGrid)
     return(fShapeGradient_y)
 end
+
 # -------------------------------------------------------------
 # Classic functions--------------------------------------------
-function getShapeValue_Classic(fDistance_x::Real, fDistance_y::Real, fCell_Length_x::Real, fCell_Length_y::Real)
+function getShapeValue_Classic(fDistance_x::Float64, fDistance_y::Float64, fCell_Length_x::Float64, fCell_Length_y::Float64)
     fShapeValue_x = 1.0 - abs(fDistance_x) / fCell_Length_x
     if(fShapeValue_x < 0.0)
         fShapeValue_x = 0.0
@@ -44,7 +43,7 @@ function getShapeValue_Classic(fDistance_x::Real, fDistance_y::Real, fCell_Lengt
     return(fShapeValue)
 end
 
-function getShapeGradient_Classic_x(fDistance_x::Real, fDistance_y::Real, fCell_Length_x::Real, fCell_Length_y::Real)
+function getShapeGradient_Classic_x(fDistance_x::Float64, fDistance_y::Float64, fCell_Length_x::Float64, fCell_Length_y::Float64)
     fShapeValue_y = 1.0 - abs(fDistance_y) / fCell_Length_y
     if(fShapeValue_y < 0.0)
         fShapeValue_y = 0.0
@@ -55,7 +54,7 @@ function getShapeGradient_Classic_x(fDistance_x::Real, fDistance_y::Real, fCell_
     return(fShapeGradient_x)
 end
 
-function getShapeGradient_Classic_y(fDistance_x::Real, fDistance_y::Real, fCell_Length_x::Real, fCell_Length_y::Real)
+function getShapeGradient_Classic_y(fDistance_x::Float64, fDistance_y::Float64, fCell_Length_x::Float64, fCell_Length_y::Float64)
     fShapeValue_x = 1.0 - abs(fDistance_x) / fCell_Length_x
     if(fShapeValue_x < 0.0)
         fShapeValue_x = 0.0
@@ -65,6 +64,7 @@ function getShapeGradient_Classic_y(fDistance_x::Real, fDistance_y::Real, fCell_
 
     return(fShapeGradient_y)
 end
+
 # cpGimp functions-----------------------------------------------
 # note: input  distance values should not be absolute value
 function getShapeValue_cpGIMP_x(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint, thisGridPoint::moduleGrid.mpmGridPoint, thisGrid::moduleGrid.mpmGrid)
@@ -181,6 +181,8 @@ function getShapeGradient_cpGIMP_y(thisMaterialPoint::moduleMaterialPoint.mpmMat
 
     return(fResult)
 end
+
+
 # -------------------------------------------------------------
 # CPDI_R4 functions-----------------------------------------------
 function getShapeValue_CPDI(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint, thisGridPoint::moduleGrid.mpmGridPoint, thisGrid::moduleGrid.mpmGrid)
@@ -269,6 +271,8 @@ function getShapeGradient_CPDI_y(thisMaterialPoint::moduleMaterialPoint.mpmMater
 
     return(fShapeGradient_y)
 end
+
+
 # -------------------------------------------------------------
 # CPDI_Q4 functions-----------------------------------------------
 function getShapeValue_CPDI_Q4(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint, thisGridPoint::moduleGrid.mpmGridPoint, thisGrid::moduleGrid.mpmGrid)
@@ -283,13 +287,13 @@ function getShapeValue_CPDI_Q4(thisMaterialPoint::moduleMaterialPoint.mpmMateria
     fV += (thisMaterialPoint.mCorner[4,1]*thisMaterialPoint.mCorner[1,2] - thisMaterialPoint.mCorner[1,1]*thisMaterialPoint.mCorner[4,2])
     fV *= 0.5
 
-    fWeight = Array{Real}(size(thisMaterialPoint.mCorner, 1))
+    fWeight = Vector{Float64}(undef, size(thisMaterialPoint.mCorner, 1))
     fWeight[1] = 6.0*fV - fa - fb
     fWeight[2] = 6.0*fV - fa + fb
     fWeight[3] = 6.0*fV + fa + fb
     fWeight[4] = 6.0*fV + fa - fb
 
-    fShapeValue = Array{Real}(size(thisMaterialPoint.mCorner, 1))
+    fShapeValue = Vector{Float64}(undef, size(thisMaterialPoint.mCorner, 1))
 
     for iIndex_Corner = 1:1:size(thisMaterialPoint.mCorner, 1)
         thisCorner = moduleMath.Vector2D(0.0, 0.0)
@@ -321,13 +325,13 @@ function getShapeGradient_CPDI_Q4_x(thisMaterialPoint::moduleMaterialPoint.mpmMa
     fV += (thisMaterialPoint.mCorner[4,1]*thisMaterialPoint.mCorner[1,2] - thisMaterialPoint.mCorner[1,1]*thisMaterialPoint.mCorner[4,2])
     fV *= 0.5
 
-    fWeight = Array{Real}(size(thisMaterialPoint.mCorner, 1))
+    fWeight = Vector{Float64}(undef, size(thisMaterialPoint.mCorner, 1))
     fWeight[1] = thisMaterialPoint.mCorner[2,2] - thisMaterialPoint.mCorner[4,2]
     fWeight[2] = thisMaterialPoint.mCorner[3,2] - thisMaterialPoint.mCorner[1,2]
     fWeight[3] = thisMaterialPoint.mCorner[4,2] - thisMaterialPoint.mCorner[2,2]
     fWeight[4] = thisMaterialPoint.mCorner[1,2] - thisMaterialPoint.mCorner[3,2]
 
-    fShapeValue = Array{Real}(size(thisMaterialPoint.mCorner, 1))
+    fShapeValue = Vector{Float64}(undef, size(thisMaterialPoint.mCorner, 1))
 
     for iIndex_Corner = 1:1:size(thisMaterialPoint.mCorner, 1)
         thisCorner = moduleMath.Vector2D(0.0, 0.0)
@@ -359,13 +363,13 @@ function getShapeGradient_CPDI_Q4_y(thisMaterialPoint::moduleMaterialPoint.mpmMa
     fV += (thisMaterialPoint.mCorner[4,1]*thisMaterialPoint.mCorner[1,2] - thisMaterialPoint.mCorner[1,1]*thisMaterialPoint.mCorner[4,2])
     fV *= 0.5
 
-    fWeight = Array{Real}(size(thisMaterialPoint.mCorner, 1))
+    fWeight = Vector{Float64}(undef, size(thisMaterialPoint.mCorner, 1))
     fWeight[1] = thisMaterialPoint.mCorner[4,1] - thisMaterialPoint.mCorner[2,1]
     fWeight[2] = thisMaterialPoint.mCorner[1,1] - thisMaterialPoint.mCorner[3,1]
     fWeight[3] = thisMaterialPoint.mCorner[2,1] - thisMaterialPoint.mCorner[4,1]
     fWeight[4] = thisMaterialPoint.mCorner[3,1] - thisMaterialPoint.mCorner[1,1]
 
-    fShapeValue = Array{Real}(size(thisMaterialPoint.mCorner, 1))
+    fShapeValue = Vector{Float64}(undef, size(thisMaterialPoint.mCorner, 1))
 
     for iIndex_Corner = 1:1:size(thisMaterialPoint.mCorner, 1)
         thisCorner = moduleMath.Vector2D(0.0, 0.0)
