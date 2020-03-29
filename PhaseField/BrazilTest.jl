@@ -17,7 +17,7 @@ using Printf
 using LinearAlgebra
 import PyPlot
 
-push!(LOAD_PATH, pwd())
+# push!(LOAD_PATH, pwd())
 
 #pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
 
@@ -27,9 +27,9 @@ include("mesh.jl")
 include("FiniteElements.jl")
 include("MyBasis.jl")
 include("ParticleGeneration.jl")
-
-using moduleGrid
-using moduleParticleGen
+using .moduleGrid
+using .moduleBasis
+using .moduleParticleGen
 
 function info(allDeformMP, allRigidMP, allMP, feMesh)
     # ---------------------------------------------------------------------------
@@ -108,9 +108,9 @@ thisGrid = moduleGrid.mpmGrid(lxn, lyn, ex+1, ey+1)
 ###############################################################
 # array holding all material points (these are references to rollerLeft etc.)
 # and array holding all rigid particles
-allDeformMP        = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
-allRigidMP         = Array{Any,1}(0)
-allMaterialPoints  = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+allDeformMP        = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
+allRigidMP         = Vector{Any}(undef, 0)
+allMaterialPoints  = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 
 disk    = moduleParticleGen.createMaterialDomain_Circle([rad+0.5*Delta; rad+thick], rad, thisGrid, ppc)
 for iIndex_MP = 1:1:length(disk)
@@ -191,8 +191,8 @@ info(allDeformMP, allRigidMP, allMaterialPoints, feMesh)
 iMaterialPoints = length(allDeformMP)
 array_x         = [allDeformMP[i].v2Centroid[1] for i in 1:iMaterialPoints]
 array_y         = [allDeformMP[i].v2Centroid[2] for i in 1:iMaterialPoints]
-array_color     = Array{Float64}(iMaterialPoints, 3)
-array_size      = Array{Float64}(iMaterialPoints, 1)
+array_color     = Array{Float64, 2}(undef, iMaterialPoints, 3)
+array_size      = Array{Float64, 2}(undef, iMaterialPoints, 1)
 for iIndex in 1:1:iMaterialPoints
     array_color[iIndex, :] = [1.0, 0.0, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
     array_size[iIndex, :] = [5.0]
@@ -429,8 +429,8 @@ while fTime < fTimeEnd
     #@printf("    Initial time step   : %6f3 \n", fTime)
 
     if ( iStep % interval == 0 )
-        FeMesh.vtk(feMesh, phase_field, string(phiFile,"$iStep.vtu" ))
-        moduleMaterialPoint.VTKParticles(allMaterialPoints,"Brazil$(iStep).vtp")
+        FeMesh.vtk(feMesh, phase_field, string("./_img/", phiFile,"$iStep.vtu" ))
+        moduleMaterialPoint.VTKParticles(allMaterialPoints,"./_img/Brazil$(iStep).vtp")
     end
     fTime += fTimeIncrement
     iStep += 1
