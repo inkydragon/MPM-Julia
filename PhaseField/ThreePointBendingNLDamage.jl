@@ -22,9 +22,10 @@ include("MyMaterialPoint.jl")
 include("MyGrid.jl")
 include("MyBasis.jl")
 include("ParticleGeneration.jl")
-
-using moduleGrid
-using moduleParticleGen
+using .moduleMaterialPoint
+using .moduleGrid
+using .moduleBasis
+using .moduleParticleGen
 
 function info(allDeformMP, allRigidMP, allMP)
     # ---------------------------------------------------------------------------
@@ -157,11 +158,11 @@ nc   = 1 # => 2 cells with
 beam = moduleParticleGen.createMaterialDomain_RectangleWithNotch(
     [
         0.0+Delta 2*radius;
-        lx +Delta 2*radius+0.003
+        lx+Delta 2*radius+0.003
     ],
     [
-        0.5*lxn - nc*thisGrid.v2Length_Cell[1] 2*radius;
-        0.5*lxn + nc*thisGrid.v2Length_Cell[1] 2*radius + 5*thisGrid.v2Length_Cell[2]
+        0.5*lxn-nc*thisGrid.v2Length_Cell[1] 2*radius;
+        0.5*lxn+nc*thisGrid.v2Length_Cell[1] 2*radius+5*thisGrid.v2Length_Cell[2]
     ],
     thisGrid,
     ppc
@@ -448,7 +449,7 @@ while fTime < fTimeEnd
     #@printf("    Initial time step   : %6f3 \n", fTime)
 
     if ( iStep % interval == 0 )
-        moduleMaterialPoint.VTKParticles(allMaterialPoints,"ThreePointNLD$(iStep).vtp")
+        moduleMaterialPoint.VTKParticles(allMaterialPoints,"./_img/ThreePointNLD$(iStep).vtp")
     end
     fTime += fTimeIncrement
     iStep += 1

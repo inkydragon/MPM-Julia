@@ -470,8 +470,8 @@ while fTime < fTimeEnd
     #@printf("	Initial time step   : %6f3 \n", fTime)
 
     if ( iStep % interval == 0 )
-        FeMesh.vtk(feMesh, phase_field, string(phiFile,"$iStep.vtu" ))
-        moduleMaterialPoint.VTKParticles(allMaterialPoints,"ThreePointBending$(iStep).vtp")
+        FeMesh.vtk(feMesh, phase_field, string("./_img/", phiFile, "$iStep.vtu" ))
+        moduleMaterialPoint.VTKParticles(allMaterialPoints,"./_img/ThreePointBending$(iStep).vtp")
     end
     fTime += fTimeIncrement
     iStep += 1
