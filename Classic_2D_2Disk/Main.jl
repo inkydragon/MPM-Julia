@@ -8,7 +8,7 @@ using Printf
 using LinearAlgebra
 import PyPlot
 
-# pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
+pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
 include("MyMaterialPoint.jl")
 using .moduleMaterialPoint
 include("MyGrid.jl")
@@ -98,7 +98,7 @@ fTimeIncrement = 1.0e-3
 fTimeEnd       = 3.5e-0
 
 # realtime graphics timer
-fPlotTimeInterval = 10.5*fTimeEnd#1000.0*fTimeIncrement
+fPlotTimeInterval = 0.1*fTimeEnd#1000.0*fTimeIncrement
 fPlotTime = 0
 
 # final results plot timer
@@ -288,26 +288,26 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             array_color[iIndex, :] = [1.0, 0.0, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
             array_size[iIndex, :] = [5.0]
         end
-
+        PyPlot.clf()
         pyPlot01 = PyPlot.gca()
         # pyPlot01 = PyPlot.subplot2grid((1,1), (0,0), colspan=1, rowspan=1, aspect="equal")
         PyPlot.scatter(array_x, array_y, c=array_color, lw=0, s=array_size)
-        pyPlot01[:spines]["top"][:set_color]("gray")
-        pyPlot01[:spines]["right"][:set_color]("gray")
-        pyPlot01[:spines]["bottom"][:set_color]("gray")
-        pyPlot01[:spines]["left"][:set_color]("gray")
-        # pyPlot01[:axhline](linewidth=4, color="g")
-        # pyPlot01[:axvline](linewidth=4, color="g")
-        pyPlot01[:set_xlim](0.0, 1.0)
-        pyPlot01[:set_ylim](0.0, 1.0)
-        # pyPlot01[:set_xlabel]("")
-        # pyPlot01[:set_ylabel]("")
-        pyPlot01[:grid](b=true, which="both", color="gray", linestyle="-", linewidth=0.5)
-        pyPlot01[:set_axisbelow](true)
-        pyPlot01[:set_xticks]([])# empty to have no major ticks and grids
-        pyPlot01[:set_xticks](collect(0.0:0.05:1.0),minor=true)
-        pyPlot01[:set_yticks]([])# empty to have no major ticks and grids
-        pyPlot01[:set_yticks](collect(0.0:0.05:1.0),minor=true)
+        pyPlot01.spines["top"].set_color("gray")
+        pyPlot01.spines["right"].set_color("gray")
+        pyPlot01.spines["bottom"].set_color("gray")
+        pyPlot01.spines["left"].set_color("gray")
+        # pyPlot01.axhline(linewidth=4, color="g")
+        # pyPlot01.axvline(linewidth=4, color="g")
+        pyPlot01.set_xlim(0.0, 1.0)
+        pyPlot01.set_ylim(0.0, 1.0)
+        # pyPlot01.set_xlabel("")
+        # pyPlot01.set_ylabel("")
+        pyPlot01.grid(b=true, which="both", color="gray", linestyle="-", linewidth=0.5)
+        pyPlot01.set_axisbelow(true)
+        pyPlot01.set_xticks([])# empty to have no major ticks and grids
+        pyPlot01.set_xticks(collect(0.0:0.05:1.0),minor=true)
+        pyPlot01.set_yticks([])# empty to have no major ticks and grids
+        pyPlot01.set_yticks(collect(0.0:0.05:1.0),minor=true)
 
         # PyPlot.show()
         # PyPlot.hold(true)
@@ -323,15 +323,15 @@ pyFig_RealTime = PyPlot.figure("MPM 2Disk FinalPlot", figsize=(8/2.54, 4/2.54))
 PyPlot.clf()
 pyPlot01 = PyPlot.gca()
 PyPlot.subplots_adjust(left=0.15, bottom=0.25, right=0.65)
-pyPlot01[:grid](b=true, which="both", color="gray", linestyle="-", linewidth=0.5)
-pyPlot01[:set_axisbelow](true)
-pyPlot01[:set_xlim](0.0, 4.0)
-pyPlot01[:set_ylim](0.0, 3.0)
-pyPlot01[:set_xlabel]("time (s)", fontsize=8)
-pyPlot01[:set_ylabel]("energy (\$\\times 10^{-3}\$ Nm)", fontsize=8)
-pyPlot01[:set_xticks](collect(0.0:1.0:4.0))
-pyPlot01[:tick_params](axis="both", which="major", labelsize=8)
-pyPlot01[:set_yticks](collect(0.0:1.0:3.0))
+pyPlot01.grid(b=true, which="both", color="gray", linestyle="-", linewidth=0.5)
+pyPlot01.set_axisbelow(true)
+pyPlot01.set_xlim(0.0, 4.0)
+pyPlot01.set_ylim(0.0, 3.0)
+pyPlot01.set_xlabel("time (s)", fontsize=8)
+pyPlot01.set_ylabel("energy (\$\\times 10^{-3}\$ Nm)", fontsize=8)
+pyPlot01.set_xticks(collect(0.0:1.0:4.0))
+pyPlot01.tick_params(axis="both", which="major", labelsize=8)
+pyPlot01.set_yticks(collect(0.0:1.0:3.0))
 PyPlot.plot(plot_Time, c="blue", plot_KineticEnergy, "-", label="\$ K \$", linewidth=1.0)
 # PyPlot.hold(true)
 PyPlot.plot(plot_Time, c="red", plot_StrainEnergy, "-", label="\$ U \$", linewidth=1.0)
