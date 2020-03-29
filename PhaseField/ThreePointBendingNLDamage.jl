@@ -53,31 +53,31 @@ end
 
 # Main function, where the problem is defined and solved
 function mpmMain()
-const nsd      = 2
-const fGravity = 0.0
-const density  = 2400.0    # density of concrete [kg/m^3]
-const young    = 70.0e9    # Pa
-const poisson  = 0.3
-const young1   = 70.0e18   # Pa
-const l0       = 0.0005    # length scale in phase field model [m]
-const kappa0   = 0.001
-const kappa1   = 0.01
+nsd      = 2
+fGravity = 0.0
+density  = 2400.0    # density of concrete [kg/m^3]
+young    = 70.0e9    # Pa
+poisson  = 0.3
+young1   = 70.0e18   # Pa
+l0       = 0.0005    # length scale in phase field model [m]
+kappa0   = 0.001
+kappa1   = 0.01
 
 
 shear, bulk    = getShearBulkMod(young , poisson, nsd)
 shear1,bulk1   = getShearBulkMod(young1, poisson, nsd)
 
-const smallMass= 1.0e-12
+smallMass= 1.0e-12
 
-const v0       = 1.0     # velocity of the impactor [m/s]
+v0       = 1.0     # velocity of the impactor [m/s]
 
-const fTimeEnd = 0.02
-        fTime    = 0.0
+fTimeEnd = 0.02
+fTime    = 0.0
 
-        ppc      = [3,3]
+ppc      = [3,3]
 
-        phiFile  = "ThreePointNL"
-const interval = 100       # interval for output
+phiFile  = "ThreePointNL"
+interval = 100       # interval for output
 
 ###############################################################
 # grid creation, this is for MPM (displacement field)
@@ -95,8 +95,8 @@ thisGrid = moduleGrid.mpmGrid(lxn, lyn, ex+1, ey+1)
 
 fixGridNodes = collect(1:thisGrid.v2Nodes[1])
 
-const nonlocalRad = 2thisGrid.v2Length_Cell[1]
-const c           = 3.0 / (pi*nonlocalRad^2)
+nonlocalRad = 2thisGrid.v2Length_Cell[1]
+c           = 3.0 / (pi*nonlocalRad^2)
 
 # fix boundary conditions on the grid
 for iIndex in 1:thisGrid.iNodes

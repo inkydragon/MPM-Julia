@@ -61,32 +61,32 @@ end
 # Main function, where the problem is defined and solved
 function mpmMain()
 
-const nsd      = 2
-const fGravity = 0.0
-const density  = 2700.0e-12 # density of concrete [kg/m^3]
-const young    = 50.0e3     # MPa
-const poisson  = 0.25
-const k        = 1.0e-18
-const ft       = 10.0         # tensile strength in MPa
-const Gc       = 50.0e-3     # fracture energy [N/mm]
+nsd      = 2
+fGravity = 0.0
+density  = 2700.0e-12 # density of concrete [kg/m^3]
+young    = 50.0e3     # MPa
+poisson  = 0.25
+k        = 1.0e-18
+ft       = 10.0         # tensile strength in MPa
+Gc       = 50.0e-3     # fracture energy [N/mm]
 # length scale in phase field model [mm]
 # from 1D exact solution
-const l0       = (9/16.0)^2*young*Gc/ft^2    # length scale in phase field model [mm]
-        P        = [0.5 0.5 0.0;-0.5 0.5 0.0;0.0 0.0 1.0]
+l0       = (9/16.0)^2*young*Gc/ft^2    # length scale in phase field model [mm]
+P        = [0.5 0.5 0.0;-0.5 0.5 0.0;0.0 0.0 1.0]
 
 shear, bulk    = getShearBulkMod(young , poisson, nsd)
 
-const smallMass= 1.0e-12
+smallMass= 1.0e-12
 
-const v0       = 0.1e3     # velocity of the impactor [mm/s]
+v0       = 0.1e3     # velocity of the impactor [mm/s]
 
-const fTimeEnd = 0.02
-        fTime    = 0.0
+fTimeEnd = 0.02
+fTime    = 0.0
 
-        ppc      = [3,3]
+ppc      = [3,3]
 
-        phiFile  = "Brazil"
-const interval = 100       # interval for output
+phiFile  = "Brazil"
+interval = 100       # interval for output
 
 ###############################################################
 # grid creation, this is for MPM (displacement field)
