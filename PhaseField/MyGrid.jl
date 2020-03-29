@@ -1,10 +1,10 @@
 module moduleGrid
 
 using Printf
-include("MyMaterialPoint.jl")
-import moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
+using ..moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
 
-export point2ElemIndexIJ, getAdjacentGridPoints
+export mpmGridPoint, mpmGrid,
+    point2ElemIndexIJ, getAdjacentGridPoints
 
 function index2DTo1D(i::Int64, j::Int64, nColumns::Int64, nRows::Int64)
     index = nColumns*(j-1) + i
@@ -22,21 +22,23 @@ end
 ###################################################
 
 mutable struct mpmGridPoint
-    v2Fixed     :: Array{Bool}               # fix in two directions
+    v2Fixed     :: Vector{Bool}               # fix in two directions
     fMass       :: Float64                   # mass of a g rid point
-    v2Position  :: Array{Float64}            # coordinates
-    v2Velocity  :: Array{Float64}            # velocities
-    v2Momentum  :: Array{Float64}            # momentum
-    v2Force     :: Array{Float64}            # forces
+    v2Position  :: Vector{Float64}            # coordinates
+    v2Velocity  :: Vector{Float64}            # velocities
+    v2Momentum  :: Vector{Float64}            # momentum
+    v2Force     :: Vector{Float64}            # forces
 
     # constructor to initialise the above data of a grid point
     function mpmGridPoint()
-        new([false; false],
-                0.0,
-                zeros(2),
-                zeros(2),
-                zeros(2),
-                zeros(2))
+        new(
+            [false; false],
+            0.0,
+            zeros(2),
+            zeros(2),
+            zeros(2),
+            zeros(2)
+        )
     end
 end
 
@@ -45,13 +47,13 @@ end
 ###################################################
 
 mutable struct mpmGrid
-    v2Length_Grid     :: Array{Float64}    # dimensions of the grid in 2 directions
-    v2Nodes           :: Array{Int64}      # number of grid nodes along x and y direction
+    v2Length_Grid     :: Vector{Float64}    # dimensions of the grid in 2 directions
+    v2Nodes           :: Vector{Int64}      # number of grid nodes along x and y direction
     iNodes            :: Int64             # total number of grid nodes
-    v2Length_Cell     :: Array{Float64}    # Deltax and Deltay, lengths of one cell/element
-    GridPoints        :: Array{mpmGridPoint}
+    v2Length_Cell     :: Vector{Float64}    # Deltax and Deltay, lengths of one cell/element
+    GridPoints        :: Vector{mpmGridPoint}
 
-    elem2MP           :: Dict{Int64,Array{Int64,1}} # cell => MP, for nonlocal damage models
+    elem2MP           :: Dict{Int64,Vector{Int64}} # cell => MP, for nonlocal damage models
 
     function mpmGrid(fGL_x, fGL_y, iN_x, iN_y)
 
@@ -59,26 +61,26 @@ mutable struct mpmGrid
         v2CL[1] = fGL_x / Float64(iN_x - 1.0)
         v2CL[2] = fGL_y / Float64(iN_y - 1.0)
 
-        thisGridPoint = Array{mpmGridPoint}(iN_x * iN_y)
+        thisGridPoint = Vector{mpmGridPoint}(undef, iN_x * iN_y)
         for j=1:1:iN_y
-        for i=1:1:iN_x
-            x = (i-1) * v2CL[1]
-            y = (j-1) * v2CL[2]
-            index = index2DTo1D(i, j, iN_x, iN_y)
+            for i=1:1:iN_x
+                x = (i-1) * v2CL[1]
+                y = (j-1) * v2CL[2]
+                index = index2DTo1D(i, j, iN_x, iN_y)
 
-            bFixed_x = false
-            bFixed_y = false
-            thisGridPoint[index] = mpmGridPoint() # starts with every member equal to zero
-            thisGridPoint[index].v2Fixed = [bFixed_x; bFixed_y]
-            thisGridPoint[index].v2Position = [x; y]
+                bFixed_x = false
+                bFixed_y = false
+                thisGridPoint[index] = mpmGridPoint() # starts with every member equal to zero
+                thisGridPoint[index].v2Fixed = [bFixed_x; bFixed_y]
+                thisGridPoint[index].v2Position = [x; y]
+            end
         end
-        end
-        new([fGL_x; fGL_y], [iN_x; iN_y], iN_x*iN_y, v2CL, thisGridPoint)
+        new([fGL_x; fGL_y], [iN_x; iN_y], iN_x*iN_y, v2CL, thisGridPoint, Dict())
     end
 end
 
-function getAdjacentGridPoints(thisMaterialPoint::moduleMaterialPoint.mpmMaterialPoint_2D_Classic, thisGrid::mpmGrid)
-    thisAdjacentGridPoints = Array{Int64}(0)
+function getAdjacentGridPoints(thisMaterialPoint::mpmMaterialPoint_2D_Classic, thisGrid::mpmGrid)
+    thisAdjacentGridPoints = Vector{Int64}(undef, 0)
 
     v2Coordinate = thisMaterialPoint.v2Centroid
 
@@ -104,7 +106,7 @@ function getAdjacentGridPoints(thisMaterialPoint::moduleMaterialPoint.mpmMateria
     return((thisAdjacentGridPoints))
 end
 
-function point2ElemIndexIJ(x::Array{Float64},grid::mpmGrid)
+function point2ElemIndexIJ(x::Vector{Float64},grid::mpmGrid)
     deltax = grid.v2Length_Cell[1]
     deltay = grid.v2Length_Cell[2]
 
@@ -132,9 +134,9 @@ function point2ElemIndexIJ(x::Array{Float64},grid::mpmGrid)
 end
 
 # find the grid points of elements that contain particles
-# return Array{Int64,1}
+# return Vector{Int64}
 function getGridPointsForParticles(
-    particles::Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic},
+    particles::Vector{mpmMaterialPoint_2D_Classic},
     thisGrid::mpmGrid
 )
     set = BitSet()
@@ -152,9 +154,9 @@ end
 # update the material points inside every elements/cells
 function update(
     mesh::mpmGrid,
-    materialPoints::Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}
+    materialPoints::Vector{mpmMaterialPoint_2D_Classic}
 )
-    elem2MPTemp = Dict{Int64,Array{Int64,1}}()
+    elem2MPTemp = Dict{Int64,Vector{Int64}}()
     for iIndex_MP in 1:length(materialPoints)
         thisMP      = materialPoints[iIndex_MP]
         x           = thisMP.v2Centroid[1]
@@ -177,10 +179,10 @@ end
 # materialPOints = material points
 # @output: an array of integers which are the indices (in materialPoints array) of sought for particles
 function getNeibourParticleIDs(
-    xp::Array{Float64},
+    xp::Vector{Float64},
     radius::Float64,
     grid::mpmGrid,
-    materialPoints::Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}
+    materialPoints::Vector{mpmMaterialPoint_2D_Classic}
 )
     xmin = xp[1] - radius
     xmax = xp[1] + radius
@@ -190,7 +192,7 @@ function getNeibourParticleIDs(
     minI, minJ = point2ElemIndexIJ([xmin;ymin], grid)
     maxI, maxJ = point2ElemIndexIJ([xmax;ymax], grid)
 
-    result     = Array{Int64}(0)
+    result     = Vector{Int64}(undef, 0)
     noElemX    =  grid.v2Nodes[1] - 1
 
     for i = minI:maxI

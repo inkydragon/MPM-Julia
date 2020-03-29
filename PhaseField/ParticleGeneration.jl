@@ -1,17 +1,15 @@
 module moduleParticleGen
 
-include("MyGrid.jl")
-include("MyMaterialPoint.jl")
-using  moduleGrid
-using  moduleMaterialPoint
+using ..moduleGrid
+using ..moduleMaterialPoint
 
 #export createMaterialDomain_Rectangle, createMaterialDomain_Circle
 
 function createMaterialDomain_Circle(
-    fCenter::Array{Float64},
+    fCenter::Vector{Float64},
     fRadius::Float64,
     grid,
-    ppc::Array{Int64}
+    ppc::Vector{Int64}
 )
 
     xc   = fCenter[1]
@@ -31,7 +29,7 @@ function createMaterialDomain_Circle(
     dx         = deltaX/ppc[1]
     dy         = deltaY/ppc[2]
 
-    thisMaterialDomain = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+    thisMaterialDomain = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 
     for i = minI:maxI
         for j = minJ:maxJ
@@ -57,9 +55,9 @@ function createMaterialDomain_Circle(
 end
 
 function createMaterialDomain_Rectangle(
-    corners::Array{Float64},
+    corners::Array{Float64, 2},
     grid,
-    ppc::Array{Int64}
+    ppc::Vector{Int64}
 )
 
     xmin = corners[1,1]
@@ -76,7 +74,7 @@ function createMaterialDomain_Rectangle(
     dx         = deltaX/ppc[1]
     dy         = deltaY/ppc[2]
 
-    thisMaterialDomain = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+    thisMaterialDomain = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 
     for i = minI:maxI
         for j = minJ:maxJ
@@ -102,10 +100,10 @@ function createMaterialDomain_Rectangle(
 end
 
 function createMaterialDomain_RectangleWithNotch(
-    corners::Array{Float64},
-    notch::Array{Float64},
+    corners::Array{Float64, 2},
+    notch::Array{Float64, 2},
     grid,
-    ppc::Array{Int64}
+    ppc::Vector{Int64}
 )
 
     xmin = corners[1,1]
@@ -127,7 +125,7 @@ function createMaterialDomain_RectangleWithNotch(
     dx         = deltaX/ppc[1]
     dy         = deltaY/ppc[2]
 
-    thisMaterialDomain = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+    thisMaterialDomain = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 
     for i = minI:maxI
         for j = minJ:maxJ

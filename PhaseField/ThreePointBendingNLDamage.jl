@@ -44,11 +44,11 @@ end
 
 # compute shear and bulk modulus given Young and Poisson
 function getShearBulkMod(young, poisson, nsd)
- shear    = young / 2.0 / (1.0 + poisson)
- lambda   = young*poisson/(1.0 + poisson)/(1.0 - 2.0 *poisson)
- bulk     = lambda + 2.0 *shear/nsd
+    shear    = young / 2.0 / (1.0 + poisson)
+    lambda   = young*poisson/(1.0 + poisson)/(1.0 - 2.0 *poisson)
+    bulk     = lambda + 2.0 *shear/nsd
 
- return shear, bulk
+    return shear, bulk
 end
 
 # Main function, where the problem is defined and solved
@@ -111,9 +111,9 @@ end
 ###############################################################
 # array holding all material points (these are references to rollerLeft etc.)
 # and array holding all rigid particles
-allDeformMP        = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
-allRigidMP         = Array{Any,1}(0)
-allMaterialPoints  = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+allDeformMP        = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
+allRigidMP         = Vector{Any}(undef, 0)
+allMaterialPoints  = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 
 radius  = 0.001/2.0     # radius of rollers
 
@@ -218,8 +218,8 @@ moduleGrid.update( thisGrid, allDeformMP )
 iMaterialPoints = length(allDeformMP)
 array_x         = [allDeformMP[i].v2Centroid[1] for i in 1:iMaterialPoints]
 array_y         = [allDeformMP[i].v2Centroid[2] for i in 1:iMaterialPoints]
-array_color     = Array{Float64}(iMaterialPoints, 3)
-array_size      = Array{Float64}(iMaterialPoints, 1)
+array_color     = Array{Float64, 2}(undef, iMaterialPoints, 3)
+array_size      = Array{Float64, 2}(undef, iMaterialPoints, 1)
 for iIndex in 1:1:iMaterialPoints
     array_color[iIndex, :] = [1.0, 0.0, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
     array_size[iIndex, :] = [5.0]

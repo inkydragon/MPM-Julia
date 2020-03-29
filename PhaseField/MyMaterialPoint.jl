@@ -13,17 +13,17 @@ mutable struct mpmMaterialPoint_2D_Classic   #material point container
     fShear          :: Float64         # shear modulus
     fBulk           :: Float64         # bulk modulus
 
-    v2Centroid      :: Array{Float64}
-    v2Velocity      :: Array{Float64}
-    v2Momentum      :: Array{Float64}
-    v2ExternalForce :: Array{Float64}
-    v2Restraint     :: Array{Float64}    # 0.0=no restraint, 1.0=fully restrained
+    v2Centroid      :: Vector{Float64}
+    v2Velocity      :: Vector{Float64}
+    v2Momentum      :: Vector{Float64}
+    v2ExternalForce :: Vector{Float64}
+    v2Restraint     :: Vector{Float64}    # 0.0=no restraint, 1.0=fully restrained
 
-    m22DeformationGradient::Array{Float64}
-    m22DeformationGradientIncrement::Array{Float64}
+    m22DeformationGradient::Array{Float64, 2}
+    m22DeformationGradientIncrement::Array{Float64, 2}
 
-    v3Strain        :: Array{Float64} # xx, yy, zz, xy, yz, zx
-    v3Stress        :: Array{Float64}
+    v3Strain        :: Vector{Float64} # xx, yy, zz, xy, yz, zx
+    v3Stress        :: Vector{Float64}
 
     fHistory        :: Float64   # local history field H of Miehe
     fColor          :: Float64   # color for visualisation
@@ -50,7 +50,7 @@ end
 
 # compute stress using Amor's tension/compression split
 # phi: phase field
-function getStress(bulk, shear, phi, k, strain::Array{Float64})
+function getStress(bulk, shear, phi, k, strain::Vector{Float64})
     v3Result     = zeros(3)
 
     traceEps     = strain[1] + strain[2]
@@ -70,7 +70,7 @@ function getStress(bulk, shear, phi, k, strain::Array{Float64})
     return(v3Result)
 end
 
-function getStressIncrement_Elastic(fE::Float64, fNu::Float64, v3StrainIncrement::Array{Float64})
+function getStressIncrement_Elastic(fE::Float64, fNu::Float64, v3StrainIncrement::Vector{Float64})
     v3Result = zeros(3)
 
     fConstant = fE/(1.0 + fNu)/(1.0 - 2.0*fNu)
@@ -83,7 +83,7 @@ function getStressIncrement_Elastic(fE::Float64, fNu::Float64, v3StrainIncrement
 end
 
 # compute plane strain principal strains
-function getPrincipalStrains(v3Strain::Array{Float64})
+function getPrincipalStrains(v3Strain::Vector{Float64})
 
     exx =       v3Strain[1]
     eyy =       v3Strain[2]
@@ -102,7 +102,7 @@ function getPrincipalStrains(v3Strain::Array{Float64})
 end
 
 # compute Mazars equivalent strain (scalar) from the principal strains
-function getMazarsStrain(v3PStrain::Array{Float64})
+function getMazarsStrain(v3PStrain::Vector{Float64})
     result = 0.0
 
     for i=1:3

@@ -28,9 +28,9 @@ include("mesh.jl")
 include("FiniteElements.jl")
 include("MyBasis.jl")
 include("ParticleGeneration.jl")
-
-using moduleGrid
-using moduleParticleGen
+using .moduleGrid
+using .moduleBasis
+using .moduleParticleGen
 
 function info(allDeformMP, allRigidMP, allMP, feMesh)
 	# ---------------------------------------------------------------------------
@@ -116,9 +116,9 @@ end
 ###############################################################
 # array holding all material points (these are references to rollerLeft etc.)
 # and array holding all rigid particles
-allDeformMP        = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
-allRigidMP         = Array{Any,1}(0)
-allMaterialPoints  = Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(0)
+allDeformMP        = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
+allRigidMP         = Vector{Any}(undef, 0)
+allMaterialPoints  = Vector{moduleMaterialPoint.mpmMaterialPoint_2D_Classic}(undef, 0)
 
 radius  = 0.001/2.0     # radius of rollers
 
@@ -178,9 +178,9 @@ for iIndex_MP = 1:length(beam)
     beam[iIndex_MP].fPoissonRatio   = poisson
     beam[iIndex_MP].fShear          = shear
     beam[iIndex_MP].fBulk           = bulk
-    beam[iIndex_MP].v2Velocity = [0.0; 0.0]
-    beam[iIndex_MP].v2Momentum = beam[iIndex_MP].fMass*beam[iIndex_MP].v2Velocity
-    beam[iIndex_MP].fColor         = 3.0
+    beam[iIndex_MP].v2Velocity      = [0.0; 0.0]
+    beam[iIndex_MP].v2Momentum      = beam[iIndex_MP].fMass*beam[iIndex_MP].v2Velocity
+    beam[iIndex_MP].fColor          = 3.0
 
     push!(allDeformMP, beam[iIndex_MP])
     push!(allMaterialPoints, beam[iIndex_MP])
@@ -193,9 +193,9 @@ for iIndex_MP = 1:length(rollerMid)
     rollerMid[iIndex_MP].fPoissonRatio   = poisson
     rollerMid[iIndex_MP].fShear          = shear1
     rollerMid[iIndex_MP].fBulk           = bulk1
-    rollerMid[iIndex_MP].v2Velocity = [0.0; -v0]
-    rollerMid[iIndex_MP].v2Momentum = rollerMid[iIndex_MP].fMass*rollerMid[iIndex_MP].v2Velocity
-    rollerMid[iIndex_MP].fColor         = 2.0
+    rollerMid[iIndex_MP].v2Velocity      = [0.0; -v0]
+    rollerMid[iIndex_MP].v2Momentum      = rollerMid[iIndex_MP].fMass*rollerMid[iIndex_MP].v2Velocity
+    rollerMid[iIndex_MP].fColor          = 2.0
 
     #push!(allRigidMP, rollerMid[iIndex_MP])
     push!(allMaterialPoints, rollerMid[iIndex_MP])
@@ -234,8 +234,8 @@ info(allDeformMP, allRigidMP, allMaterialPoints, feMesh)
 iMaterialPoints = length(allDeformMP)
 array_x         = [allDeformMP[i].v2Centroid[1] for i in 1:iMaterialPoints]
 array_y         = [allDeformMP[i].v2Centroid[2] for i in 1:iMaterialPoints]
-array_color     = Array{Float64}(iMaterialPoints, 3)
-array_size      = Array{Float64}(iMaterialPoints, 1)
+array_color     = Array{Float64, 2}(undef, iMaterialPoints, 3)
+array_size      = Array{Float64, 2}(undef, iMaterialPoints, 1)
 for iIndex in 1:1:iMaterialPoints
     array_color[iIndex, :] = [1.0, 0.0, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
     array_size[iIndex, :] = [5.0]

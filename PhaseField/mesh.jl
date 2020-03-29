@@ -6,8 +6,9 @@ module FeMesh
 using Printf
 using DelimitedFiles
 using PyPlot
-include("MyMaterialPoint.jl")
-import moduleMaterialPoint
+using ..moduleMaterialPoint
+
+export Mesh
 
 
 # Data structure to store mesh
@@ -25,7 +26,7 @@ mutable struct Mesh
     nodes      :: Array{Float64, 2}
     elements   :: Array{Int, 2}
 
-    elem2MP    :: Dict{Int64,Array{Int64,1}}
+    elem2MP    :: Dict{Int64, Vector{Int64}}
 
     function Mesh(dim::Int, lx::Float64, ly::Float64, elemCountX::Int, elemCountY::Int)
         elemCount  = elemCountX * elemCountY
@@ -56,7 +57,7 @@ mutable struct Mesh
             end
         end
 
-        new(dim, lx, ly, elemCountX, elemCountY, elemCount, nodeCount, dx, dy, nodes, elements)
+        new(dim, lx, ly, elemCountX, elemCountY, elemCount, nodeCount, dx, dy, nodes, elements, Dict())
     end # function Mesh
 end # Mesh
 
@@ -72,7 +73,7 @@ function write_to_file(mesh::Mesh)
     end
 end
 
-function vtk(mesh::Mesh,phi::Array{Float64},vtuFile::String)
+function vtk(mesh::Mesh, phi::Array{Float64}, vtuFile::String)
     results_vtu        = open(vtuFile, "w")
     numVertexesPerCell = 4
     VTKCellCode        = 9
@@ -98,7 +99,7 @@ function vtk(mesh::Mesh,phi::Array{Float64},vtuFile::String)
     write(results_vtu, "<DataArray  type=\"Int32\"  Name=\"connectivity\"  format=\"ascii\"> \n");
 
     for i=1:mesh.elemCount
-        writedlm(results_vtu, transpose(mesh.elements[:,i])-1 );
+        writedlm(results_vtu, transpose(mesh.elements[:,i]).-1 );
     end
 
     write(results_vtu, "</DataArray> \n");
@@ -136,8 +137,8 @@ function vtk(mesh::Mesh,phi::Array{Float64},vtuFile::String)
     close(results_vtu);
 end
 
-function update( mesh::Mesh, materialPoints::Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic})
-    elem2MPTemp = Dict{Int64,Array{Int64,1}}()
+function update(mesh::Mesh, materialPoints::Vector{mpmMaterialPoint_2D_Classic})
+    elem2MPTemp = Dict{Int64, Vector{Int64}}()
     for iIndex_MP in 1:length(materialPoints)
         thisMP      = materialPoints[iIndex_MP]
         x           = thisMP.v2Centroid[1]
@@ -152,7 +153,7 @@ function update( mesh::Mesh, materialPoints::Array{moduleMaterialPoint.mpmMateri
     mesh.elem2MP = elem2MPTemp
 end
 
-function findAdjacentPoints(xp::Array{Float64}, mesh::Mesh )
+function findAdjacentPoints(xp::Vector{Float64}, mesh::Mesh)
     iBottomLeft_i    = Int64( (floor(xp[1] / mesh.deltaX) + 1.0) )
     iBottomLeft_j    = Int64( (floor(xp[2] / mesh.deltaY) + 1.0) )
 
@@ -175,7 +176,6 @@ function plot_mesh(mesh::Mesh)
         ypt[n] = mesh.nodes[2,mesh.elements[ord[n],e]]
         end
         PyPlot.plot(xpt,ypt, color="blue", linewidth=2.0, linestyle="-")
-        PyPlot.hold(true)
     end
 end
 

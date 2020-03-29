@@ -1,11 +1,9 @@
 using Printf
 using SparseArrays
-include("mesh.jl")
-include("MyMaterialPoint.jl")
-import FeMesh
-import moduleMaterialPoint
+using .moduleMaterialPoint
+using .FeMesh
 
-function getN(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float64)
+function getN(x::Vector{Float64}, xI::Vector{Float64}, dx::Float64, dy::Float64)
     fShapeValue   = 0.0
     v2Distance    = x - xI
     v2ShapeValue1 = 1.0 - abs(v2Distance[1]) / dx
@@ -25,7 +23,7 @@ function getN(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float64)
     return(fShapeValue)
 end
 
-function getdNdx(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float64)
+function getdNdx(x::Vector{Float64}, xI::Vector{Float64}, dx::Float64, dy::Float64)
     v2Result = zeros(2)
 
     v2Distance   = x - xI
@@ -45,7 +43,7 @@ function getdNdx(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float64
     return(v2Result)
 end
 
-function getNdNdx(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float64)
+function getNdNdx(x::Vector{Float64}, xI::Vector{Float64}, dx::Float64, dy::Float64)
     v2Result = zeros(2)
 
     v2Distance   = x - xI
@@ -66,8 +64,8 @@ function getNdNdx(x::Array{Float64}, xI::Array{Float64}, dx::Float64, dy::Float6
 end
 
 function fe_matrices(
-    mesh::FeMesh.Mesh,
-    materialPoints::Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic},
+    mesh::Mesh,
+    materialPoints::Vector{mpmMaterialPoint_2D_Classic},
     F,
     l0,
     gc
@@ -119,7 +117,7 @@ function fe_matrices(
                     iu[sparseCount] = ni;
                     ju[sparseCount] = nj;
                     vu[sparseCount] = ke[i,j];
-                catch BoundsError()
+                catch BoundsError
                     iu = vcat(iu,ni)
                     ju = vcat(ju,nj)
                     vu = vcat(vu,ke[i,j])
@@ -139,9 +137,9 @@ function fe_matrices(
 end # fe_matrices
 
 function solve_fe(
-    phi::Array{Float64},
-    mesh::FeMesh.Mesh,
-    materialPoints::Array{moduleMaterialPoint.mpmMaterialPoint_2D_Classic},
+    phi::Vector{Float64},
+    mesh::Mesh,
+    materialPoints::Vector{mpmMaterialPoint_2D_Classic},
     l0,
     Gc
 )
