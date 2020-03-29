@@ -1,28 +1,26 @@
 module moduleMath
 
-mutable struct Vector2D   #node container
-    fx::Real
-    fy::Real
+export Vector2D, Vector3D
 
-    function Vector2D()
-        new(0.0, 0.0)
-    end
-    function Vector2D(f1::Real, f2::Real)
-        new(f1, f2)
+mutable struct Vector2D   #node container
+    fx::Float64
+    fy::Float64
+
+    function Vector2D(x::Float64, y::Float64)
+        new(x, y)
     end
 end
+Vector2D() = Vector2D(0.0, 0.0)
 
 mutable struct Vector3D   #node container
-    f1::Real
-    f2::Real
-    f3::Real
+    f1::Float64
+    f2::Float64
+    f3::Float64
 
-    function Vector3D()
-        new(0.0, 0.0, 0.0)
-    end
-    function Vector3D(f1::Real, f2::Real, f3::Real)
-        new(f1, f2, f3)
+    function Vector3D(x::Float64, y::Float64, z::Float64)
+        new(x, y, z)
     end
 end
+Vector3D() = Vector3D(0.0, 0.0, 0.0)
 
 end # module moduleMath

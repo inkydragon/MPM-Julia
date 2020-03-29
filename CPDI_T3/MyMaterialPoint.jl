@@ -1,91 +1,108 @@
 module moduleMaterialPoint
 
 using LinearAlgebra
-include("MyMath.jl")
-import moduleMath #sina, do not use include here, since you have already included the module in Main.jl
+using ..moduleMath #sina, do not use include here, since you have already included the module in Main.jl
+
+export mpmMaterialPoint,
+    createMaterialDomain_Rectangle,
+    createMaterialDomain_Circle
 
 mutable struct mpmMaterialPoint   #material point container
-    fMass::Real
-    fVolumeInitial::Real
-    fVolume::Real
-    v2Length::moduleMath.Vector2D
+    fMass::Float64
+    fVolumeInitial::Float64
+    fVolume::Float64
+    v2Length::Vector2D
 
-    fElasticModulus::Real
-    fPoissonRatio::Real
+    fElasticModulus::Float64
+    fPoissonRatio::Float64
 
-    v2Position::moduleMath.Vector2D
-    v2PositionIncrement::moduleMath.Vector2D
-    v2Velocity::moduleMath.Vector2D
-    v2Momentum::moduleMath.Vector2D
-    v2ExternalForce::moduleMath.Vector2D
-    v2Restraint::moduleMath.Vector2D    # 0.0=no restraint, 1.0=fully restrained
+    v2Position::Vector2D
+    v2PositionIncrement::Vector2D
+    v2Velocity::Vector2D
+    v2Momentum::Vector2D
+    v2ExternalForce::Vector2D
+    v2Restraint::Vector2D    # 0.0=no restraint, 1.0=fully restrained
 
-    mCorner::Array{Real}
-    mCorner_Increment::Array{Real}
+    mCorner::Array{Float64,2}
+    mCorner_Increment::Array{Float64,2}
 
-    mRadial1::Array{Real}
-    mRadial2::Array{Real}
+    mRadial1::Vector{Float64}
+    mRadial2::Vector{Float64}
 
-    mDeformationGradient::Array{Real}
-    mDeformationGradientIncrement::Array{Real}
+    mDeformationGradient::Array{Float64,2}
+    mDeformationGradientIncrement::Array{Float64,2}
 
-    v3Strain::moduleMath.Vector3D
-    v3Stress::moduleMath.Vector3D
-    v3StrainIncrement::moduleMath.Vector3D
-    v3StressIncrement::moduleMath.Vector3D
+    v3Strain::Vector3D
+    v3Stress::Vector3D
+    v3StrainIncrement::Vector3D
+    v3StressIncrement::Vector3D
 
     function mpmMaterialPoint()
-        new(1.0, 1.0, 1.0,
-            moduleMath.Vector2D(0.0, 0.0),
+        new(
+            1.0, 1.0, 1.0,
+            Vector2D(0.0, 0.0),
             1.0, 0.3,
-            moduleMath.Vector2D(0.0, 0.0),
-            moduleMath.Vector2D(0.0, 0.0),
-            moduleMath.Vector2D(0.0, 0.0),
-            moduleMath.Vector2D(0.0, 0.0),
-            moduleMath.Vector2D(0.0, 0.0),
-            moduleMath.Vector2D(0.0, 0.0),
+            Vector2D(0.0, 0.0),
+            Vector2D(0.0, 0.0),
+            Vector2D(0.0, 0.0),
+            Vector2D(0.0, 0.0),
+            Vector2D(0.0, 0.0),
+            Vector2D(0.0, 0.0),
             zeros(0,2),
             zeros(0,2),
             ones(2),
             ones(2),
             Matrix{Float64}(I, 2, 2),
             Matrix{Float64}(I, 2, 2),
-            moduleMath.Vector3D(0.0, 0.0, 0.0),
-            moduleMath.Vector3D(0.0, 0.0, 0.0),
-            moduleMath.Vector3D(0.0, 0.0, 0.0),
-            moduleMath.Vector3D(0.0, 0.0, 0.0))
+            Vector3D(0.0, 0.0, 0.0),
+            Vector3D(0.0, 0.0, 0.0),
+            Vector3D(0.0, 0.0, 0.0),
+            Vector3D(0.0, 0.0, 0.0)
+        )
     end
-    function mpmMaterialPoint(fM::Real, fV::Real, fEM::Real, fPR::Real, v2P::moduleMath.Vector2D, v2V::moduleMath.Vector2D, v2M::moduleMath.Vector2D, v2ExternalForce::moduleMath.Vector2D, v3Strain::moduleMath.Vector3D, v3Stress::moduleMath.Vector3D)
+
+    function mpmMaterialPoint(
+        fM::Float64,
+        fV::Float64,
+        fEM::Float64,
+        fPR::Float64,
+        v2P::Vector2D,
+        v2V::Vector2D,
+        v2M::Vector2D,
+        v2ExternalForce::Vector2D,
+        v3Strain::Vector3D,
+        v3Stress::Vector3D
+    )
         new(fM, fV, fV,
-            moduleMath.Vector2D(0.0, 0.0),
+            Vector2D(0.0, 0.0),
             fEM, fPR,
-            moduleMath.Vector2D(v2P),
-            moduleMath.Vector2D(0.0, 0.0),
-            moduleMath.Vector2D(v2V),
-            moduleMath.Vector2D(v2M),
-            moduleMath.Vector2D(v2ExternalForce),
-            moduleMath.Vector2D(0.0, 0.0),
+            v2P,
+            Vector2D(0.0, 0.0),
+            v2V,
+            v2M,
+            v2ExternalForce,
+            Vector2D(0.0, 0.0),
             zeros(0,2),
             zeros(0,2),
             ones(2),
             ones(2),
             Matrix{Float64}(I, 2, 2),
             Matrix{Float64}(I, 2, 2),
-            moduleMath.Vector3D(0.0, 0.0, 0.0),
-            moduleMath.Vector3D(0.0, 0.0, 0.0),
-            moduleMath.Vector3D(0.0, 0.0, 0.0),
-            moduleMath.Vector3D(0.0, 0.0, 0.0))
+            Vector3D(0.0, 0.0, 0.0),
+            Vector3D(0.0, 0.0, 0.0),
+            Vector3D(0.0, 0.0, 0.0),
+            Vector3D(0.0, 0.0, 0.0))
     end
 end
 
-function createMaterialDomain_Rectangle(sParticleShape::String, fCenter_x::Real, fCenter_y::Real, fWidth::Real, fHeight::Real, fOffset::Real)
-    thisMaterialDomain = Array{mpmMaterialPoint}(0)
+function createMaterialDomain_Rectangle(sParticleShape::String, fCenter_x::Float64, fCenter_y::Float64, fWidth::Float64, fHeight::Float64, fOffset::Float64)
+    thisMaterialDomain = Vector{mpmMaterialPoint}(undef, 0)
 
     if(sParticleShape == "triangle")
         # left triangles
         for fBaseCorner_y = -0.5*fHeight:fOffset:+0.5*fHeight
             for fBaseCorner_x = -0.5*fWidth:fOffset:+0.5*fWidth
-                v2Corner = Array{Real}(3,2)
+                v2Corner = Array{Float64, 2}(undef, 3,2)
                 v2Corner[1,1] = fBaseCorner_x + 0.0
                 v2Corner[1,2] = fBaseCorner_y + 0.0
 
@@ -123,10 +140,11 @@ function createMaterialDomain_Rectangle(sParticleShape::String, fCenter_x::Real,
                 end
             end
         end
+
         # bottom triangles
         for fBaseCorner_y = -0.5*fHeight:fOffset:+0.5*fHeight
             for fBaseCorner_x = -0.5*fWidth:fOffset:+0.5*fWidth
-                v2Corner = Array{Real}(3,2)
+                v2Corner = Array{Float64, 2}(undef, 3,2)
                 v2Corner[1,1] = fBaseCorner_x + 0.0
                 v2Corner[1,2] = fBaseCorner_y + 0.0
 
@@ -164,10 +182,11 @@ function createMaterialDomain_Rectangle(sParticleShape::String, fCenter_x::Real,
                 end
             end
         end
+
         # right triangles
         for fBaseCorner_y = -0.5*fHeight:fOffset:+0.5*fHeight
             for fBaseCorner_x = -0.5*fWidth:fOffset:+0.5*fWidth
-                v2Corner = Array{Real}(3,2)
+                v2Corner = Array{Float64, 2}(undef, 3,2)
                 v2Corner[1,1] = fBaseCorner_x + 1.0*fOffset
                 v2Corner[1,2] = fBaseCorner_y + 0.0
 
@@ -205,10 +224,11 @@ function createMaterialDomain_Rectangle(sParticleShape::String, fCenter_x::Real,
                 end
             end
         end
+
         # top triangles
         for fBaseCorner_y = -0.5*fHeight:fOffset:+0.5*fHeight
             for fBaseCorner_x = -0.5*fWidth:fOffset:+0.5*fWidth
-                v2Corner = Array{Real}(3,2)
+                v2Corner = Array{Float64, 2}(undef, 3,2)
                 v2Corner[1,1] = fBaseCorner_x + 1.0*fOffset
                 v2Corner[1,2] = fBaseCorner_y + 1.0*fOffset
 
@@ -251,7 +271,7 @@ function createMaterialDomain_Rectangle(sParticleShape::String, fCenter_x::Real,
     if(sParticleShape == "rectangle")
         for fBaseCorner_y = -0.5*fHeight:fOffset:+0.5*fHeight
             for fBaseCorner_x = -0.5*fWidth:fOffset:+0.5*fWidth
-                v2Corner = Array{Real}(4,2)
+                v2Corner = Array{Float64, 2}(undef, 4,2)
                 v2Corner[1,1] = fBaseCorner_x + 0.0
                 v2Corner[1,2] = fBaseCorner_y + 0.0
 
@@ -296,11 +316,11 @@ function createMaterialDomain_Rectangle(sParticleShape::String, fCenter_x::Real,
     return(thisMaterialDomain)
 end
 
-function createMaterialDomain_Rectangle(fCenter_x::Real, fCenter_y::Real, fWidth::Real, fHeight::Real, fOffset::Real)
-    thisMaterialDomain = Array{mpmMaterialPoint}(0)
+function createMaterialDomain_Rectangle(fCenter_x::Float64, fCenter_y::Float64, fWidth::Float64, fHeight::Float64, fOffset::Float64)
+    thisMaterialDomain = Vector{mpmMaterialPoint}(undef, 0)
 
-    fWidth    = floor(fWidth/fOffset) * fOffset    #just in case width is not a multiple of offset
-    fHeight    = floor(fHeight/fOffset) * fOffset    #just in case height is not a multiple of offset
+    fWidth = floor(fWidth/fOffset) * fOffset    #just in case width is not a multiple of offset
+    fHeight = floor(fHeight/fOffset) * fOffset    #just in case height is not a multiple of offset
 
     for fy in -0.5*fHeight+0.5*fOffset:fOffset:+0.5*fHeight-0.5*fOffset
         for fx in -0.5*fWidth+0.5*fOffset:fOffset:+0.5*fWidth-0.5*fOffset
@@ -314,8 +334,8 @@ function createMaterialDomain_Rectangle(fCenter_x::Real, fCenter_y::Real, fWidth
     return(thisMaterialDomain)
 end
 
-function createMaterialDomain_Circle(fCenter_x::Real, fCenter_y::Real, fRadius::Real, fOffset::Real)
-    thisMaterialDomain = Array{mpmMaterialPoint}(0)
+function createMaterialDomain_Circle(fCenter_x::Float64, fCenter_y::Float64, fRadius::Float64, fOffset::Float64)
+    thisMaterialDomain = Vector{mpmMaterialPoint}(undef, 0)
 
     fRadius = floor(fRadius/fOffset) * fOffset    #just in case radius is not a multiple of offset
 
