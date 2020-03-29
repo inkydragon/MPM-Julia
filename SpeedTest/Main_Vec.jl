@@ -1,18 +1,15 @@
-# cd("Julia/MPM")
-# cd("E:\\MyPublications\\MPM_Julia\\Codes\\SpeedTest")
-
 # simple implementation to test the processing speed of iterative for loops and vectors
 using Printf
 
 function myMain()
-iIterations = 1000
+iIterations = 100
 # Data Structure-------------------------------------------------------------
 # ---------------------------------------------------------------------------
 @printf("Creating arrays...")
 @time begin
-    thisArray01 = Array{Float64}(10,1000000)
-    thisArray02 = Array{Float64}(10,1000000)
-    thisArray03 = Array{Float64}(10,1000000)
+    thisArray01 = Array{Float64, 2}(undef, 10,1000000)
+    thisArray02 = Array{Float64, 2}(undef, 10,1000000)
+    thisArray03 = Array{Float64, 2}(undef, 10,1000000)
     @printf("...done ")
 end
 @printf("\n")
@@ -21,9 +18,9 @@ end
 @time begin
     for i = 1:1:size(thisArray01,1)
         for j = 1:1:size(thisArray01,2)
-            thisArray01[i,j] = 1.0*i
+            thisArray01[i,j] =  1.0*i
             thisArray02[i,j] = -1.0*i
-            thisArray03[i,j] = 0
+            thisArray03[i,j] =  0.0
         end
     end
     @printf("...done ")

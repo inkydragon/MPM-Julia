@@ -6,22 +6,21 @@
 using Printf
 
 mutable struct testDataStructure
-    vMember::Array{Float64}
-
-    function testDataStructure()
-        new(zeros(100))
-    end
+    vMember::Array{Float64,2}
+end
+function testDataStructure()
+    testDataStructure(zeros(100,1))
 end
 
 function myMain()
-iIterations = 1000
+iIterations = 10
 # Array----------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 @printf("Creating arrays...")
 @time begin
-    thisArray01 = Array{Float64}(1000000,100)
-    thisArray02 = Array{Float64}(1000000,100)
-    thisArray03 = Array{Float64}(1000000,100)
+    thisArray01 = Array{Float64, 2}(undef, 1000000,100)
+    thisArray02 = Array{Float64, 2}(undef, 1000000,100)
+    thisArray03 = Array{Float64, 2}(undef, 1000000,100)
     @printf("...done ")
 end
 @printf("\n")
@@ -59,9 +58,9 @@ end
 # ---------------------------------------------------------------------------
 @printf("Creating data structures...")
 @time begin
-    thisDataStructure01 = Array{testDataStructure}(1000000)
-    thisDataStructure02 = Array{testDataStructure}(1000000)
-    thisDataStructure03 = Array{testDataStructure}(1000000)
+    thisDataStructure01 = Vector{testDataStructure}(undef, 1000000)
+    thisDataStructure02 = Vector{testDataStructure}(undef, 1000000)
+    thisDataStructure03 = Vector{testDataStructure}(undef, 1000000)
     @printf("...done ")
 end
 @printf("\n")
