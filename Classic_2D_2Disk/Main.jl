@@ -9,14 +9,12 @@ using LinearAlgebra
 import PyPlot
 
 # pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
-push!(LOAD_PATH, @__DIR__)
-@show LOAD_PATH
 include("MyMaterialPoint.jl")
-# using MyMaterialPoint
+using .moduleMaterialPoint
 include("MyGrid.jl")
-# using moduleGrid
+using .moduleGrid
 include("MyBasis.jl")
-# using moduleBasis
+using .moduleBasis
 
 function mpmMain()
 # problem parameters
@@ -335,7 +333,7 @@ pyPlot01[:set_xticks](collect(0.0:1.0:4.0))
 pyPlot01[:tick_params](axis="both", which="major", labelsize=8)
 pyPlot01[:set_yticks](collect(0.0:1.0:3.0))
 PyPlot.plot(plot_Time, c="blue", plot_KineticEnergy, "-", label="\$ K \$", linewidth=1.0)
-PyPlot.hold(true)
+# PyPlot.hold(true)
 PyPlot.plot(plot_Time, c="red", plot_StrainEnergy, "-", label="\$ U \$", linewidth=1.0)
 PyPlot.plot(plot_Time, c="green", plot_KineticEnergy + plot_StrainEnergy, "-", label="\$ K+U \$", linewidth=1.0)
 PyPlot.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0, fontsize=8)

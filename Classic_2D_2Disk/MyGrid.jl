@@ -1,7 +1,7 @@
 module moduleGrid
 
 using Printf
-import moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
+import ..moduleMaterialPoint #sina, do not use include here, since you have already included the module in Main.jl
 
 # fTime = 0.0
 

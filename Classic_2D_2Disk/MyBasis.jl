@@ -1,8 +1,8 @@
 module moduleBasis
 
 using Printf
-import moduleGrid #sina, do not use include here, since you have already included the module in Main.jl
-import moduleMaterialPoint
+import ..moduleGrid #sina, do not use include here, since you have already included the module in Main.jl
+import ..moduleMaterialPoint
 
 # -------------------------------------------------------------
 # Classic functions--------------------------------------------
