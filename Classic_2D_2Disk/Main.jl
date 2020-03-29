@@ -312,7 +312,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         # PyPlot.show()
         # PyPlot.hold(true)
 
-        strFileName = "./img/2Disk_$(Int(fTime*1000)).png"
+        strFileName = "./_img/2Disk_$(Int(fTime*1000)).png"
         PyPlot.savefig(strFileName, bbox_inches="tight")
         # PyPlot.hold(false)
     end
@@ -337,7 +337,7 @@ PyPlot.plot(plot_Time, c="blue", plot_KineticEnergy, "-", label="\$ K \$", linew
 PyPlot.plot(plot_Time, c="red", plot_StrainEnergy, "-", label="\$ U \$", linewidth=1.0)
 PyPlot.plot(plot_Time, c="green", plot_KineticEnergy + plot_StrainEnergy, "-", label="\$ K+U \$", linewidth=1.0)
 PyPlot.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0, fontsize=8)
-PyPlot.savefig("./img/plot_2Disk_Julia.pdf")
+PyPlot.savefig("./_img/plot_2Disk_Julia.pdf")
 end # mpmMain
 
 mpmMain()
