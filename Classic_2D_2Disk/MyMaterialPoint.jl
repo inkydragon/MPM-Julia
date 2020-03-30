@@ -1,6 +1,9 @@
 module moduleMaterialPoint
 
-using LinearAlgebra
+using LinearAlgebra # I
+export mpmMaterialPoint_2D_Classic,
+    createMaterialDomain_Circle
+
 # material point container
 mutable struct mpmMaterialPoint_2D_Classic
     fMass            :: Float64
@@ -10,11 +13,11 @@ mutable struct mpmMaterialPoint_2D_Classic
     fElasticModulus  :: Float64
     fPoissonRatio    :: Float64
 
-    v2Centroid       :: Vector{Float64}  # position
+    v2Centroid       :: Vector{Float64} # position
     v2Velocity       :: Vector{Float64}
     v2Momentum       :: Vector{Float64}
     v2ExternalForce  :: Vector{Float64}
-    v2Restraint      :: Vector{Float64}    # 0.0=no restraint, 1.0=fully restrained
+    v2Restraint      :: Vector{Float64} # 0.0=no restraint, 1.0=fully restrained
 
     v2Corner         :: Array{Float64,2} # corner position
 
@@ -42,22 +45,23 @@ mutable struct mpmMaterialPoint_2D_Classic
     end
 end
 
-function createMaterialDomain_Circle(fCenter::Array{Float64}, fRadius::Float64, fOffset::Float64)
-    thisMaterialDomain = Array{mpmMaterialPoint_2D_Classic}(undef, 0)
+function createMaterialDomain_Circle(fCenter::Vector{Float64}, fRadius::Float64, fOffset::Float64)
+    thisMaterialDomain = Vector{mpmMaterialPoint_2D_Classic}(undef, 0)
 
-    fRadius = floor(fRadius/fOffset) * fOffset    #just in case radius is not a multiple of offset
+    # just in case radius is not a multiple of offset
+    fRadius = floor(fRadius/fOffset) * fOffset    
 
-    for fy in -fRadius+0.5*fOffset:fOffset:+fRadius-0.5*fOffset
-        for fx in -fRadius+0.5*fOffset:fOffset:+fRadius-0.5*fOffset
-            if(fx^2 + fy^2 < fRadius^2)
-                thisMaterialPoint = mpmMaterialPoint_2D_Classic()
-                thisMaterialPoint.v2Centroid = [fCenter[1] + fx; fCenter[2] + fy]
-                push!(thisMaterialDomain, thisMaterialPoint)
-            end
+    start = -fRadius+0.5*fOffset
+    xy_range = start:fOffset:-start
+    for fy in xy_range, fx in xy_range
+        if(fx^2 + fy^2 < fRadius^2)
+            thisMaterialPoint = mpmMaterialPoint_2D_Classic()
+            thisMaterialPoint.v2Centroid = [fCenter[1] + fx; fCenter[2] + fy]
+            push!(thisMaterialDomain, thisMaterialPoint)
         end
     end
 
-    return(thisMaterialDomain)
+    thisMaterialDomain
 end
 
 end # module moduleMaterialPoint

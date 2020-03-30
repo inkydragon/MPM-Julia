@@ -1,19 +1,16 @@
-# MPM implementation for the 2disk impact problem
-# Sina Sinaie, Monash University
-# July, 2016
-
-# cd("E:\\MyPublications\\MPM_Julia\\Codes\\Classic_2D_2Disk")
-# import Gadfly
-using Printf
+#=
+    MPM implementation for the 2disk impact problem
+    Sina Sinaie, Monash University
+    July, 2016
+=#
 using LinearAlgebra
-import PyPlot
-
-pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
+using Printf
+using PyPlot
 include("MyMaterialPoint.jl")
+include("MyGrid.jl") # need moduleMaterialPoint
+include("MyBasis.jl") # need moduleMaterialPoint, moduleGrid
 using .moduleMaterialPoint
-include("MyGrid.jl")
 using .moduleGrid
-include("MyBasis.jl")
 using .moduleBasis
 
 function mpmMain()
@@ -37,7 +34,7 @@ thisMaterialDomain_01 = moduleMaterialPoint.createMaterialDomain_Circle([0.2; 0.
 # for iIndex_MP=1:domain1PCount, where domain1PCount=length(thisMaterialDomain_01)
 # does not significantly perform better!!!, so the following is fine
 for iIndex_MP = 1:length(thisMaterialDomain_01)
-    fVolume = fOffset*fOffset#3.14159*0.2*0.2/length(thisMaterialDomain_01)
+    fVolume = fOffset*fOffset # 3.14159*0.2*0.2/length(thisMaterialDomain_01)
     fMass   = density*fVolume
     thisMaterialDomain_01[iIndex_MP].fMass           = fMass
     thisMaterialDomain_01[iIndex_MP].fVolumeInitial  = fVolume
@@ -53,22 +50,21 @@ for iIndex_MP = 1:length(thisMaterialDomain_01)
 
     push!(allMaterialPoint, thisMaterialDomain_01[iIndex_MP])
 end
-
-#for iIndex_MP = 1:1:length(thisMaterialDomain_01)
+# for iIndex_MP = 1:1:length(thisMaterialDomain_01)
 #    push!(allMaterialPoint, thisMaterialDomain_01[iIndex_MP])
-#end
+# end
 
 thisMaterialDomain_02 = moduleMaterialPoint.createMaterialDomain_Circle([0.8; 0.8], 0.2, fOffset)
 for iIndex_MP = 1:1:length(thisMaterialDomain_02)
-    fVolume = fOffset*fOffset#3.14159*0.2*0.2/length(thisMaterialDomain_02)
+    fVolume = fOffset*fOffset # 3.14159*0.2*0.2/length(thisMaterialDomain_02)
     fMass   = density*fVolume
     thisMaterialDomain_02[iIndex_MP].fMass           = fMass
     thisMaterialDomain_02[iIndex_MP].fVolumeInitial  = fVolume
     thisMaterialDomain_02[iIndex_MP].fVolume         = fVolume
     thisMaterialDomain_02[iIndex_MP].fElasticModulus = youngModulus
     thisMaterialDomain_02[iIndex_MP].fPoissonRatio   = poissonRatio
-    thisMaterialDomain_02[iIndex_MP].v2Velocity = [-0.1; -0.1]
-    thisMaterialDomain_02[iIndex_MP].v2Momentum = fMass*thisMaterialDomain_02[iIndex_MP].v2Velocity
+    thisMaterialDomain_02[iIndex_MP].v2Velocity      = [-0.1; -0.1]
+    thisMaterialDomain_02[iIndex_MP].v2Momentum      = fMass*thisMaterialDomain_02[iIndex_MP].v2Velocity
     thisMaterialDomain_02[iIndex_MP].v2ExternalForce = [0.0; -fGravity*fMass]
 
     thisMaterialDomain_02[iIndex_MP].m22DeformationGradient = Matrix{Float64}(I, 2, 2)
@@ -76,9 +72,9 @@ for iIndex_MP = 1:1:length(thisMaterialDomain_02)
 
     push!(allMaterialPoint, thisMaterialDomain_02[iIndex_MP])
 end
-#for iIndex_MP = 1:1:length(thisMaterialDomain_02)
+# for iIndex_MP = 1:1:length(thisMaterialDomain_02)
 #    push!(allMaterialPoint, thisMaterialDomain_02[iIndex_MP])
-#end
+# end
 
 # ---------------------------------------------------------------------------
 # information about the created domain
@@ -86,9 +82,11 @@ fMass = 0.0
 for iIndex_MP in 1:1:length(allMaterialPoint)
     fMass += allMaterialPoint[iIndex_MP].fMass
 end
-@printf("Initial configuration: \n")
-@printf("    Mass: %+.6e \n", fMass)
-@printf("Total number of material points: %d \n", length(allMaterialPoint))
+@info begin
+    @sprintf("Initial configuration: \n") *
+    @sprintf("    Mass: %+.6e \n", fMass) *
+    @sprintf("Total number of material points: %d \n", length(allMaterialPoint))
+end
 
 # ---------------------------------------------------------------------------
 # timers
@@ -98,34 +96,34 @@ fTimeIncrement = 1.0e-3
 fTimeEnd       = 3.5e-0
 
 # realtime graphics timer
-fPlotTimeInterval = 0.1*fTimeEnd#1000.0*fTimeIncrement
+fPlotTimeInterval = 0.1*fTimeEnd # 1000.0*fTimeIncrement
 fPlotTime = 0
 
 # final results plot timer
-fResultTimeInterval = fTimeIncrement#*fTimeEnd
+fResultTimeInterval = fTimeIncrement #*fTimeEnd
 fResultTime = 0
 
 # console output timer
-fConsolTimeInterval = 0.1*fTimeEnd#1000.0*fTimeIncrement
+fConsolTimeInterval = 0.1*fTimeEnd # 1000.0*fTimeIncrement
 fConsolTime = fConsolTimeInterval
 
 # profiler timers
 fProfiler_MainLoop      = 0.0
 fProfiler_Particle2Grid = 0.0
 fProfiler_Grid2Particle = 0.0
+
 # ---------------------------------------------------------------------------
 # plot arrays
 # ---------------------------------------------------------------------------
 # final results plot holder arrays
 fMarkedParicle_y   = thisMaterialDomain_01[1].v2Centroid[2]
-plot_Time          = Vector{Float64}(undef, 0) #??? Float64??
+plot_Time          = Vector{Float64}(undef, 0)
 # plot_Displacement  = Vector{Float64}(undef, 0) # not use
 plot_KineticEnergy = Vector{Float64}(undef, 0)
 plot_StrainEnergy  = Vector{Float64}(undef, 0)
 
 # main analysis loop
 for fTime in 0.0:fTimeIncrement:fTimeEnd
-
     fProfiler_Particle2Grid += @elapsed begin
         #reset grid---------------------------------------------------------------------
         for iIndex in 1:1:thisGrid.iNodes
@@ -134,6 +132,7 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             thisGrid.GridPoints[iIndex].v2Force    = [0.0; 0.0]
             # Note that Julia stores arrays column wise, so should use column vectors
         end
+
         # material to grid ------------------------------------------------------------
         for iIndex_MP in 1:length(allMaterialPoint)
             thisMaterialPoint      = allMaterialPoint[iIndex_MP]
@@ -156,7 +155,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
                 # external forces
                 thisGridPoint.v2Force    += fShapeValue*thisMaterialPoint.v2ExternalForce
             end
-        end
+        end # for iIndex_MP in 1:length(allMaterialPoint)
+
         # update grid momentum and apply boundary conditions ---------------------
         for iIndex_GP in 1:1:thisGrid.iNodes
             thisGridPoint = thisGrid.GridPoints[iIndex_GP]
@@ -170,9 +170,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
                 thisGridPoint.v2Momentum[2] = 0.0
                 thisGridPoint.v2Force[2]    = 0.0
             end
-        end
-    # fProfiler_Particle2Grid += toq()
-    end
+        end # for iIndex_GP in 1:1:thisGrid.iNodes
+    end # @elapsed
 
     fProfiler_Grid2Particle += @elapsed begin
         # ------------------------------------------------------------------------
@@ -223,9 +222,8 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
 
             thisMaterialPoint.fVolume      = det(thisMaterialPoint.m22DeformationGradient) * thisMaterialPoint.fVolumeInitial
             thisMaterialPoint.v2Momentum   = thisMaterialPoint.v2Velocity * thisMaterialPoint.fMass
-        end
-    # fProfiler_Grid2Particle += toq()
-    end
+        end # for iIndex_MP in 1:1:length(allMaterialPoint)
+    end # @elapsed
 
     # ------------------------------------------------------------------------
     # calculating strain and kinetic energy for final results plot
@@ -266,15 +264,18 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
             fMomentum_x += thisMaterialDomain_01[iIndex_MP].v2Momentum[1]
         end
         fProfiler_Total = fProfiler_Particle2Grid + fProfiler_Grid2Particle
-        @printf("fTime: %+.3e |", fTime)
-        @printf("M_x: %+.3e |", fMomentum_x)
-        @printf("(Profiler) Total: %+.3e ", fProfiler_Total)
-        @printf("P2G: %+.3e (%+.2f) ", fProfiler_Particle2Grid, fProfiler_Particle2Grid/fProfiler_Total)
-        @printf("G2P: %+.3e (%+.2f) \n", fProfiler_Grid2Particle, fProfiler_Grid2Particle/fProfiler_Total)
+        @info begin
+            @sprintf("fTime: %+.3e |", fTime) *
+            @sprintf("M_x: %+.3e |", fMomentum_x) *
+            @sprintf("(Profiler) Total: %+.3e ", fProfiler_Total) *
+            @sprintf("P2G: %+.3e (%+.2f) ", fProfiler_Particle2Grid, fProfiler_Particle2Grid/fProfiler_Total) *
+            @sprintf("G2P: %+.3e (%+.2f) \n", fProfiler_Grid2Particle, fProfiler_Grid2Particle/fProfiler_Total)
+        end
     end
+
     # ------------------------------------------------------------------------
     # realtime graphical plotting routines
-    # @printf("Plotting...")
+    # @info("Plotting...")
     # ------------------------------------------------------------------------
     fPlotTime += fTimeIncrement
     if(fPlotTime > fPlotTimeInterval)
@@ -282,12 +283,14 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         iMaterialPoints = length(allMaterialPoint)
         array_x         = [allMaterialPoint[i].v2Centroid[1] for i in 1:iMaterialPoints]
         array_y         = [allMaterialPoint[i].v2Centroid[2] for i in 1:iMaterialPoints]
-        array_color     = Array{Float64}(undef,iMaterialPoints, 3)
-        array_size      = Array{Float64}(undef,iMaterialPoints, 1)
+        array_color     = Array{Float64, 2}(undef, iMaterialPoints, 3)
+        array_size      = Array{Float64, 2}(undef, iMaterialPoints, 1)
         for iIndex in 1:1:iMaterialPoints
             array_color[iIndex, :] = [1.0, 0.0, 0.0]#[thisGrid.GridPoints[iIndex].fMass/iMaterialPoints, 0.0, 0.0]
             array_size[iIndex, :] = [5.0]
         end
+
+        pyFig_RealTime = PyPlot.figure("MPM 2Disk Real-time", figsize=(8/2.54, 8/2.54), edgecolor="white", facecolor="white")
         PyPlot.clf()
         pyPlot01 = PyPlot.gca()
         # pyPlot01 = PyPlot.subplot2grid((1,1), (0,0), colspan=1, rowspan=1, aspect="equal")
@@ -308,13 +311,10 @@ for fTime in 0.0:fTimeIncrement:fTimeEnd
         pyPlot01.set_xticks(collect(0.0:0.05:1.0),minor=true)
         pyPlot01.set_yticks([])# empty to have no major ticks and grids
         pyPlot01.set_yticks(collect(0.0:0.05:1.0),minor=true)
-
         # PyPlot.show()
-        # PyPlot.hold(true)
 
         strFileName = "./_img/2Disk_$(Int(fTime*1000)).png"
         PyPlot.savefig(strFileName, bbox_inches="tight")
-        # PyPlot.hold(false)
     end
 end # main analysis loop
 
@@ -333,7 +333,6 @@ pyPlot01.set_xticks(collect(0.0:1.0:4.0))
 pyPlot01.tick_params(axis="both", which="major", labelsize=8)
 pyPlot01.set_yticks(collect(0.0:1.0:3.0))
 PyPlot.plot(plot_Time, c="blue", plot_KineticEnergy, "-", label="\$ K \$", linewidth=1.0)
-# PyPlot.hold(true)
 PyPlot.plot(plot_Time, c="red", plot_StrainEnergy, "-", label="\$ U \$", linewidth=1.0)
 PyPlot.plot(plot_Time, c="green", plot_KineticEnergy + plot_StrainEnergy, "-", label="\$ K+U \$", linewidth=1.0)
 PyPlot.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0, fontsize=8)
